@@ -53,8 +53,6 @@ int main() {
 	}
 	strcpy(hello, "this is the second string");
 
-
-
 	if (!Send_WS_CLIENT(&client2, hello, 50)) {
 		cout << "coudn't send" << endl;
 	} else {
