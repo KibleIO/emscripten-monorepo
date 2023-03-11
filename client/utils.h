@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include <unistd.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
 
 using namespace std;
 

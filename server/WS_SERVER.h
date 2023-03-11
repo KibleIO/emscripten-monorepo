@@ -3,6 +3,8 @@
 
 #include "WS_SERVER_MASTER.h"
 
+#define TEST_BUFF_SIZE 4
+
 struct WS_SERVER {
 	char name[100];
 

@@ -7,3 +7,7 @@ source ~/github/emsdk/emsdk_env.sh
 install a local http server
 npm install http-server -g
 http-server
+
+install caddy
+brew install caddy
+run caddy: caddy run

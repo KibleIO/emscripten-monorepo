@@ -1,9 +1,9 @@
-CC = em++ -O2
+CC = em++ -O3
 EXEC = index.html
 SOURCES = $(wildcard *.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
-CXXFLAGS = -lwebsocket.js
+CXXFLAGS = -lwebsocket.js -sPROXY_TO_PTHREAD -sUSE_PTHREADS -sASYNCIFY
 
 default: $(OBJECTS)
 	$(CC) $(OBJECTS) -o $(EXEC) $(CC_COMPILE_FLAGS) $(CXXFLAGS)

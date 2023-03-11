@@ -14,7 +14,6 @@ int main() {
 	}
 
 	cout << "step 1" << endl;
-	/*
 
 	WS_CLIENT client;
 	if (!Initialize_WS_CLIENT(&client, &client_master, 0)) {
@@ -30,14 +29,35 @@ int main() {
 	}
 
 	cout << "step 3" << endl;
-	*/
 
-	/*
-	if (!Send_WS_CLIENT(&client, "hello", 6)) {
+	WS_CLIENT client2;
+	if (!Initialize_WS_CLIENT(&client2, &client_master, 0)) {
 		cout << "couldn't connect4" << endl;
 		return 0;
 	}
 
 	cout << "step 4" << endl;
-	*/
+
+	if (!Connect_WS_CLIENT(&client2)) {
+		cout << "couldn't connect5" << endl;
+		return 0;
+	}
+
+	char hello[100];
+	strcpy(hello, "this is the first string");
+
+	if (!Receive_WS_CLIENT(&client, hello, 34)) {
+		cout << "coudn't receive6" << endl;
+	} else {
+		cout << hello << endl;
+	}
+	strcpy(hello, "this is the second string");
+
+
+
+	if (!Send_WS_CLIENT(&client2, hello, 50)) {
+		cout << "coudn't send" << endl;
+	} else {
+		cout << "sent" << endl;
+	}
 }

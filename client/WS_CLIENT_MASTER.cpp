@@ -9,6 +9,7 @@ EM_BOOL On_Open_WS_CLIENT_MASTER(int eventType,
 	client->accept = true;
 	return EM_TRUE;
 }
+
 EM_BOOL On_Error_WS_CLIENT_MASTER(int eventType,
 	const EmscriptenWebSocketErrorEvent *websocketEvent, void *userData) {
 	
@@ -16,6 +17,7 @@ EM_BOOL On_Error_WS_CLIENT_MASTER(int eventType,
 	client->accept = false;
 	return EM_TRUE;
 }
+
 EM_BOOL On_Close_WS_CLIENT_MASTER(int eventType,
 	const EmscriptenWebSocketCloseEvent *websocketEvent, void *userData) {
 

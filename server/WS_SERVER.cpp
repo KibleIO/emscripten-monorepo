@@ -24,6 +24,8 @@ bool Set_High_Priority_WS_SERVER(WS_SERVER *server) {
 }
 
 bool Accept_WS_SERVER(WS_SERVER *server) {
+	uint8_t test_buff[TEST_BUFF_SIZE];
+
 	server->server_id = Register_Vhost_WS_SERVER_MASTER(server->ws_master);
 
 	if (!Set_Recv_Timeout_WS_SERVER(server, 5 /*DEFAULT_RECV_TIMEOUT*/, 0)) {

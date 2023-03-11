@@ -18,18 +18,36 @@ int main() {
 		return 0;
 	}
 
-	WS_SERVER server2;
-	if (!Initialize_WS_SERVER(&server2, &master_server, 0)) {
+	if (!Accept_WS_SERVER(&server1)) {
 		cout << "error3" << endl;
 		return 0;
 	}
 
-	Sleep_Milli(2000);
+	WS_SERVER server2;
+	if (!Initialize_WS_SERVER(&server2, &master_server, 0)) {
+		cout << "error4" << endl;
+		return 0;
+	}
 
-	cout << "successfully connected" << endl;
+	if (!Accept_WS_SERVER(&server2)) {
+		cout << "error5" << endl;
+		return 0;
+	}
 
-	Sleep_Milli(2000);
+	char buffer[100];
+	strcpy(buffer, "this is the third string");
 
+	if (!Send_WS_SERVER(&server1, buffer, 34)) {
+		cout << "error6" << endl;
+	} else {
+		cout << "sent bytes" << endl;
+	}
+
+	if (!Receive_WS_SERVER(&server2, buffer, 50)) {
+		cout << "error7" << endl;
+	} else {
+		cout << buffer << endl;
+	}
 
 	return 0;
 }

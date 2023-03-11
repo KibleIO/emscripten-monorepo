@@ -1,7 +1,6 @@
 #include "WS_CLIENT.h"
 
 bool Initialize_WS_CLIENT(WS_CLIENT *client, WS_CLIENT_MASTER *master, int id) {
-
 	client->ws_master = master;
 	client->recv_timeout = 100;
 	Set_Name_WS_CLIENT(client, "unknown");
@@ -25,7 +24,7 @@ bool Set_High_Priority_WS_CLIENT(WS_CLIENT *client) {
 bool Connect_WS_CLIENT(WS_CLIENT *client) {
 	client->client_id = Register_Vhost_WS_CLIENT_MASTER(client->ws_master);
 
-	if (!Set_Recv_Timeout_WS_CLIENT(client, 5 /*DEFAULT_RECV_TIMEOUT*/, 0)) {
+	if (!Set_Recv_Timeout_WS_CLIENT(client, DEFAULT_RECV_TIMEOUT, 0)) {
 		return false;
 	}
 

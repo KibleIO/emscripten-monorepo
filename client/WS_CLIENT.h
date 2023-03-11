@@ -3,6 +3,9 @@
 
 #include "WS_CLIENT_MASTER.h"
 
+#define TEST_BUFF_SIZE 4
+#define DEFAULT_RECV_TIMEOUT 1
+
 struct WS_CLIENT {
 	char name[100];
 	WS_CLIENT_MASTER *ws_master;

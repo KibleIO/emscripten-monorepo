@@ -20,7 +20,7 @@ struct WEBSOCKET_ELEMENT {
 
 struct WS_CLIENT_MASTER {
 	char name[100];
-	uint8_t	accept;
+	volatile uint8_t	accept;
 	uint8_t host_count;
 	EMSCRIPTEN_WEBSOCKET_T socket;
 
