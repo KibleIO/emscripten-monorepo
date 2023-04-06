@@ -29,7 +29,7 @@ void Start_TIMER(TIMER* timer) {
 #endif
 }
 
-long Stop_TIMER(TIMER* timer) {
+int64_t Stop_TIMER(TIMER* timer) {
 #ifdef __EMSCRIPTEN__
 	gettimeofday(&timer->end, NULL);
 	timer->seconds = timer->end.tv_sec - timer->start.tv_sec;

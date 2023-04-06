@@ -1,5 +1,6 @@
 #include <Utilities/KCONTEXT.h>
 #include <Hermes/HERMES_SERVER.h>
+#include <Hermes/SERVER.h>
 #include <iostream>
 
 using namespace std;
@@ -21,5 +22,35 @@ int main() {
 	}
 
 	cout << "success" << endl;
+
+	SERVER *server = Get_HERMES_SERVER(&hs, HERMES_DEVICE_WS);
+	if (server != NULL) {
+		char hello[100];
+		int size = 0;
+
+		if (!Receive_SERVER(server, (char*) &size, sizeof(size))) {
+			cout << "error receving" << endl;
+		}
+
+		if (!Receive_SERVER(server, hello, size)) {
+			cout << "error receving" << endl;
+		}
+
+		cout << hello << " " << size << endl;
+
+		strcpy(hello, "hello from server");
+		size = strlen(hello);
+
+		if (!Send_SERVER(server, (char*) &size, sizeof(size))) {
+			cout << "error sending" << endl;
+		}
+
+		if (!Send_SERVER(server, hello, size)) {
+			cout << "error sending" << endl;
+		}
+
+		cout << "test complete " << endl;
+	}
+
 	return 0;
 }

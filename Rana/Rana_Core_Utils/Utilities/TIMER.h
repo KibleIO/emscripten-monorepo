@@ -27,7 +27,7 @@
 struct TIMER {
 #ifdef __EMSCRIPTEN__
 	timeval start, end;
-	long seconds, useconds;
+	int64_t seconds, useconds;
 #endif
 #ifdef _WIN64
 	double PCFreq;
@@ -41,7 +41,7 @@ struct TIMER {
 
 bool Initialize_TIMER(TIMER*);
 void Start_TIMER(TIMER*);
-long Stop_TIMER(TIMER*);
+int64_t Stop_TIMER(TIMER*);
 void Delete_TIMER(TIMER*);
 
 void Set_Interval(void (*func)(void*), unsigned int, void*);

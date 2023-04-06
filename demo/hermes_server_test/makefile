@@ -66,4 +66,4 @@ reload:
 	make clean; make; make push
 
 run:
-	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/code kible/coreutils:xubuntux862 ./launcher
+	docker run -p 4512:4512 --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/code kible/coreutils:xubuntux862 ./launcher
