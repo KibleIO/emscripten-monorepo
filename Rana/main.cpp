@@ -1,61 +1,26 @@
-#include "Rana_Core_Utils/Networking/WS/WS_CLIENT_MASTER.h"
-#include "Rana_Core_Utils/Networking/WS/WS_CLIENT.h"
+#include "Rana_Core_Utils/Hermes/HERMES_CLIENT.h"
 #include <iostream>
 
 using namespace std;
 
 int main() {
 	cout << "step 0" << endl;
+	KCONTEXT ctx;
+	HERMES_CLIENT hc;
+	HERMES_TYPE themis_types[] = {HERMES_CLIENT_WS, HERMES_AUDIO_WS,
+		HERMES_VIDEO_WS, HERMES_DEVICE_WS, HERMES_NULL};
 
-	WS_CLIENT_MASTER client_master;
-	if (!Initialize_WS_CLIENT_MASTER(&client_master, NULL, 4000, "127.0.0.1")) {
-		cout << "couldn't connect1" << endl;
+	if (!Initialize_HERMES_CLIENT(&hc, &ctx, "127.0.0.1", 4512)) {
+		cout << "couldn't initialize hermes server" << endl;
 		return 0;
 	}
 
-	cout << "step 1" << endl;
+	cout << "initialized client" << endl;
 
-	WS_CLIENT client;
-	if (!Initialize_WS_CLIENT(&client, NULL, &client_master, 0)) {
-		cout << "couldn't connect2" << endl;
+	if (!Connect_HERMES_CLIENT(&hc, themis_types)) {
+		cout << "couldn't connect hermes server" << endl;
 		return 0;
 	}
 
-	cout << "step 2" << endl;
-
-	if (!Connect_WS_CLIENT(&client)) {
-		cout << "couldn't connect3" << endl;
-		return 0;
-	}
-
-	cout << "step 3" << endl;
-
-	WS_CLIENT client2;
-	if (!Initialize_WS_CLIENT(&client2, NULL, &client_master, 0)) {
-		cout << "couldn't connect4" << endl;
-		return 0;
-	}
-
-	cout << "step 4" << endl;
-
-	if (!Connect_WS_CLIENT(&client2)) {
-		cout << "couldn't connect5" << endl;
-		return 0;
-	}
-
-	char hello[100];
-	strcpy(hello, "this is the first string");
-
-	if (!Receive_WS_CLIENT(&client, hello, 34)) {
-		cout << "coudn't receive6" << endl;
-	} else {
-		cout << hello << endl;
-	}
-	strcpy(hello, "this is the second string");
-
-	if (!Send_WS_CLIENT(&client2, hello, 50)) {
-		cout << "coudn't send" << endl;
-	} else {
-		cout << "sent" << endl;
-	}
+	cout << "success" << endl;
 }
