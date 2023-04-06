@@ -1,8 +1,7 @@
-client/*.html
-client/*.js
-client/*.wasm
-client/*.o
-server/server
-server/*.o
+*.html
+*.js
+*.wasm
+*.o
+demo/server/server
 node_modules
 package-lock.json
