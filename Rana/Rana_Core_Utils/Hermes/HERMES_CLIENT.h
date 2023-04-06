@@ -3,6 +3,7 @@
 #ifndef HERMES_CLIENT_H_
 #define HERMES_CLIENT_H_
 
+#include "../Utilities/FPS_LIMITER.h"
 #include <string>
 #include "HERMES.h"
 #include "CLIENT.h"
@@ -20,8 +21,7 @@ struct CLIENT_CONNECTION {
 };
 
 struct HERMES_CLIENT {
-	CLIENT_MASTER udp_master;
-	CLIENT_MASTER tcp_master;
+	CLIENT_MASTER master;
 	CLIENT client;
 	mutex cmutx;
 	int port;
