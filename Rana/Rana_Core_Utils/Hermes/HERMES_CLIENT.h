@@ -3,13 +3,12 @@
 #ifndef HERMES_CLIENT_H_
 #define HERMES_CLIENT_H_
 
-#include <Utilities/FPS_LIMITER.h>
 #include <string>
 #include "HERMES.h"
 #include "CLIENT.h"
 #include "../Utilities/CONCURRENT_QUEUE.h"
-#include "../Utilities/LOGGING.h"
 #include "../Utilities/UTILS.h"
+#include "../Utilities/FPS_LIMITER.h"
 
 //
 //  Client

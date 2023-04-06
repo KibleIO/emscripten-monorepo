@@ -8,7 +8,7 @@ int main() {
 	cout << "step 0" << endl;
 
 	WS_CLIENT_MASTER client_master;
-	if (!Initialize_WS_CLIENT_MASTER(&client_master, 4000, "127.0.0.1")) {
+	if (!Initialize_WS_CLIENT_MASTER(&client_master, NULL, 4000, "127.0.0.1")) {
 		cout << "couldn't connect1" << endl;
 		return 0;
 	}
@@ -16,7 +16,7 @@ int main() {
 	cout << "step 1" << endl;
 
 	WS_CLIENT client;
-	if (!Initialize_WS_CLIENT(&client, &client_master, 0)) {
+	if (!Initialize_WS_CLIENT(&client, NULL, &client_master, 0)) {
 		cout << "couldn't connect2" << endl;
 		return 0;
 	}
@@ -31,7 +31,7 @@ int main() {
 	cout << "step 3" << endl;
 
 	WS_CLIENT client2;
-	if (!Initialize_WS_CLIENT(&client2, &client_master, 0)) {
+	if (!Initialize_WS_CLIENT(&client2, NULL, &client_master, 0)) {
 		cout << "couldn't connect4" << endl;
 		return 0;
 	}

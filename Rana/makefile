@@ -1,6 +1,6 @@
 CC = em++ -O3
 EXEC = index.html
-SOURCES = $(wildcard *.cpp) $(wildcard */*.cpp) $(wildcard */*/*.cpp)
+SOURCES = $(wildcard *.cpp) $(wildcard */*.cpp) $(wildcard */*/*.cpp) $(wildcard */*/*/*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
 CXXFLAGS = -lwebsocket.js -sPROXY_TO_PTHREAD -sUSE_PTHREADS -sASYNCIFY

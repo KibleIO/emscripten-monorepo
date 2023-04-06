@@ -6,7 +6,6 @@
 #include <string>
 #include "../Networking/NETWORK.h"
 #include "../Utilities/CONCURRENT_QUEUE.h"
-#include "../Utilities/LOGGING.h"
 #include "../Utilities/UTILS.h"
 
 #define HERMES_CONNECTIONS_MAX MAX_UDP_CONNECTIONS
