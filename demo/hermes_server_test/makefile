@@ -36,7 +36,7 @@ xubuntu:
 	docker run --pull=always --rm -it -v `pwd`:/root/code kible/coreutils:xubuntu make docker
 
 xubuntux86:
-	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/code kible/coreutils:xubuntux862 make docker
+	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/code kible/coreutils:xubuntux86 make docker
 
 debianx86:
 	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/code kible/coreutils:debianx86 make docker
@@ -66,4 +66,4 @@ reload:
 	make clean; make; make push
 
 run:
-	docker run -p 4512:4512 --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/code kible/coreutils:xubuntux862 ./launcher
+	docker run -p 4512:4512 --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/code kible/coreutils:xubuntux86 ./launcher
