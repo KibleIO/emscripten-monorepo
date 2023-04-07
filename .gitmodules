@@ -1,0 +1,3 @@
+[submodule "Broadway-H.264-decoder"]
+	path = Broadway-H.264-decoder
+	url = https://github.com/KibleIO/Broadway-H.264-decoder.git
