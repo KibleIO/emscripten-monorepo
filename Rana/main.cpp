@@ -2,16 +2,19 @@
 #include "Rana_Core_Utils/Hermes/CLIENT.h"
 #include <iostream>
 
+#define THEMIS_PORT 4460
+
 using namespace std;
 
 int main() {
 	cout << "step 0" << endl;
 	KCONTEXT ctx;
 	HERMES_CLIENT hc;
-	HERMES_TYPE themis_types[] = {HERMES_CLIENT_WS, HERMES_AUDIO_WS,
-		HERMES_VIDEO_WS, HERMES_DEVICE_WS, HERMES_NULL};
+	HERMES_TYPE themis_types[] = {HERMES_CLIENT_WS, HERMES_THEMIS_WS,
+		HERMES_VIDEO_INIT_WS, HERMES_VIDEO_WS, HERMES_MOUSE_WS, HERMES_KEYBOARD_WS,
+		HERMES_AUDIO_WS, HERMES_CLIPBOARD_WS, HERMES_NULL};
 
-	if (!Initialize_HERMES_CLIENT(&hc, &ctx, "127.0.0.1", 4512)) {
+	if (!Initialize_HERMES_CLIENT(&hc, &ctx, "127.0.0.1", THEMIS_PORT)) {
 		cout << "couldn't initialize hermes server" << endl;
 		return 0;
 	}
@@ -23,32 +26,9 @@ int main() {
 
 	cout << "success" << endl;
 
-	CLIENT *client = Get_HERMES_CLIENT(&hc, HERMES_DEVICE_WS);
-	if (client != NULL) {
-		char hello[100];
-		int size = 0;
+	Sleep_Milli(10000);
 
-		strcpy(hello, "hello from client");
-		size = strlen(hello);
-
-		if (!Send_CLIENT(client, (char*) &size, sizeof(size))) {
-			cout << "error sending" << endl;
-		}
-
-		if (!Send_CLIENT(client, hello, size)) {
-			cout << "error sending" << endl;
-		}
-
-		if (!Receive_CLIENT(client, (char*) &size, sizeof(size))) {
-			cout << "error receving" << endl;
-		}
-
-		if (!Receive_CLIENT(client, hello, size)) {
-			cout << "error receving" << endl;
-		}
-
-		cout << "test complete " << hello << " " << size << endl;
-	}
+	cout << "success2" << endl;
 
 	return 0;
 }
