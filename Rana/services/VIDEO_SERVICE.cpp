@@ -17,6 +17,8 @@ void Main_TCP_Loop_VIDEO_SERVICE(VIDEO_SERVICE *video) {
 	while (video->main_loop_running) {
                 if (Receive_CLIENT(video->c, (char*) &size, sizeof(int)) &&
                         Receive_CLIENT(video->c, video->nal_buffer, size)) {
+			
+			cout << "received video bytes " << size << endl;
                 }
 	}
 }

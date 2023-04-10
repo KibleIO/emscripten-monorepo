@@ -17,13 +17,14 @@
 
 struct RANA_EXT {
 	KCONTEXT *ctx;
+	
 
 	string themis_ip;
 	string error_string;
 	bool initialized_hermes;
 
 	HERMES_CLIENT hermes_client;
-
+	
 	UI_SERVICE ui;
 	VIDEO_SERVICE video;
 	THEMIS_SERVICE themis;

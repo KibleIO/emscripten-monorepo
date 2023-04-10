@@ -20,6 +20,7 @@ void Main_Loop_CLIPBOARD_SERVICE(CLIPBOARD_SERVICE *clipboard) {
 
 	while (clipboard->main_loop_running) {
 		if (Receive_CLIENT(clipboard->c, curr_clipboard_str, MAX_CLIPBOARD_SIZE)) {
+			cout << "received from clip board: " << curr_clipboard_str << endl;
 		}
 	}
 }

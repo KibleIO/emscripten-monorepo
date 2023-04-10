@@ -76,37 +76,37 @@ bool Connect_To_Themis_RANA_EXT(RANA_EXT *rana_ext) {
 
 	ASSERT_E_R((Connect_THEMIS_SERVICE(
 				   &rana_ext->themis,
-				   Get_HERMES_CLIENT(&rana_ext->hermes_client, HERMES_THEMIS),
+				   Get_HERMES_CLIENT(&rana_ext->hermes_client, HERMES_THEMIS_WS),
 				   &rana_ext->hermes_client)),
 			   "Could not connect themis service", rana_ext->ctx);
 
 	ASSERT_E_R(
 		(Connect_VIDEO_SERVICE(
 			&rana_ext->video,
-			Get_HERMES_CLIENT(&rana_ext->hermes_client, HERMES_VIDEO_INIT),
-			Get_HERMES_CLIENT(&rana_ext->hermes_client, HERMES_VIDEO))),
+			Get_HERMES_CLIENT(&rana_ext->hermes_client, HERMES_VIDEO_INIT_WS),
+			Get_HERMES_CLIENT(&rana_ext->hermes_client, HERMES_VIDEO_WS))),
 		"Could not connect video service", rana_ext->ctx);
 
 	ASSERT_E_R((Connect_MOUSE_SERVICE(
 				   &rana_ext->mouse,
-				   Get_HERMES_CLIENT(&rana_ext->hermes_client, HERMES_MOUSE))),
+				   Get_HERMES_CLIENT(&rana_ext->hermes_client, HERMES_MOUSE_WS))),
 			   "Could not connect mouse service", rana_ext->ctx);
 
 	ASSERT_E_R(
 		(Connect_KEYBOARD_SERVICE(
 			&rana_ext->keyboard,
-			Get_HERMES_CLIENT(&rana_ext->hermes_client, HERMES_KEYBOARD))),
+			Get_HERMES_CLIENT(&rana_ext->hermes_client, HERMES_KEYBOARD_WS))),
 		"Could not connect keyboard service", rana_ext->ctx);
 
 	ASSERT_E_R((Connect_AUDIO_SERVICE(
 				   &rana_ext->audio,
-				   Get_HERMES_CLIENT(&rana_ext->hermes_client, HERMES_AUDIO))),
+				   Get_HERMES_CLIENT(&rana_ext->hermes_client, HERMES_AUDIO_WS))),
 			   "Could not connect audio service", rana_ext->ctx);
 
 	ASSERT_E_R(
 		(Connect_CLIPBOARD_SERVICE(
 			&rana_ext->clipboard,
-			Get_HERMES_CLIENT(&rana_ext->hermes_client, HERMES_CLIPBOARD))),
+			Get_HERMES_CLIENT(&rana_ext->hermes_client, HERMES_CLIPBOARD_WS))),
 		"Could not connect clipboard service", rana_ext->ctx);
 
 	ASSERT_E_R(Connect_UI_SERVICE(&rana_ext->ui), "Could not connect the UI",
