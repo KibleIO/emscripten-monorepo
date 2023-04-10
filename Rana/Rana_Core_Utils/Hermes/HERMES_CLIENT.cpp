@@ -60,6 +60,7 @@ bool Create_CLIENT_CONNECTION(HERMES_CLIENT* hc, HERMES_TYPE type) {
 		}
 		return false;
 	}
+
 	if (!Receive_CLIENT(&hc->client, (char*)&ack, sizeof(int))) {
 		LOG_ERROR_CTX((hc->ctx)) {
 			ADD_STR_LOG("message", "could not receive port");

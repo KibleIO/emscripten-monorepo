@@ -144,6 +144,7 @@ bool Send_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 		//log_err("sending large packet. truncated.");
 		size = MAX_WEBSOCKET_PACKET_SIZE - 1;
 	}
+	
 
 	uint8_t	send_bytes[MAX_WEBSOCKET_PACKET_SIZE];
 
