@@ -94,10 +94,10 @@ void render_frame() {
 
 int main() {
 	KCONTEXT ctx;
-	HERMES_CLIENT hc;
-	HERMES_TYPE themis_types[] = {HERMES_CLIENT_WS, HERMES_AUDIO_WS,
-								  HERMES_VIDEO_WS, HERMES_DEVICE_WS,
-								  HERMES_NULL};
+	// HERMES_CLIENT hc;
+	// HERMES_TYPE themis_types[] = {HERMES_CLIENT_WS, HERMES_AUDIO_WS,
+	// 							  HERMES_VIDEO_WS, HERMES_DEVICE_WS,
+	// 							  HERMES_NULL};
 
 	FILE *finput;
 	RANA_EXT rana_ext;
