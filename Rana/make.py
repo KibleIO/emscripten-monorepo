@@ -57,7 +57,7 @@ emcc_args = [
     '-s', 'USE_WEBGL2=1',
     "-lwebsocket.js",
     # "-sPROXY_TO_PTHREAD",
-    # "-sUSE_PTHREADS",
+    "-sUSE_PTHREADS",
     "-sASYNCIFY",
 ]
 
