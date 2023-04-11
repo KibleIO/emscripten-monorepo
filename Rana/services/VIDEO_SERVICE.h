@@ -8,7 +8,7 @@
 #include "../LIMITS.h"
 
 //god have mercy on us
-#define MAX_NAL_SIZE 100000
+#define MAX_NAL_SIZE 50000
 
 struct VIDEO_SERVICE {
 	KCONTEXT *ctx;

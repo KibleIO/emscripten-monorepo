@@ -6,7 +6,7 @@
 #include "../Rana_Core_Utils/Utilities/KCONTEXT.h"
 #include "../Rana_Core_Utils/Hermes/CLIENT.h"
 
-#define MAX_NAL_SIZE 100000
+#define MAX_NAL_SIZE 50000
 
 struct AUDIO_SERVICE {
 	KCONTEXT *ctx;
