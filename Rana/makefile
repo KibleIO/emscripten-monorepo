@@ -3,7 +3,7 @@ EXEC = index.html
 SOURCES = $(wildcard *.cpp) $(wildcard */*.cpp) $(wildcard */*/*.cpp) $(wildcard */*/*/*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
-CXXFLAGS = -lwebsocket.js -sPROXY_TO_PTHREAD -sUSE_PTHREADS -sASYNCIFY -sTOTAL_MEMORY=1024MB
+CXXFLAGS = -lwebsocket.js -sUSE_PTHREADS -sASYNCIFY -sTOTAL_MEMORY=1024MB
 
 default: $(OBJECTS)
 	$(CC) $(OBJECTS) -o $(EXEC) $(CC_COMPILE_FLAGS) $(CXXFLAGS)
