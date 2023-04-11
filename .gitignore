@@ -3,6 +3,7 @@
 *.bc
 *.data
 *.h264
+*.o
 demo/server/server
 hermes_test
 
