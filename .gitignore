@@ -5,6 +5,7 @@
 *.h264
 demo/server/server
 hermes_test
+.DS_Store
 
 .vscode/
 obj/
