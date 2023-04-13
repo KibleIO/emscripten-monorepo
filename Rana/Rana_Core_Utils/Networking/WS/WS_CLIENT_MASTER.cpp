@@ -173,7 +173,7 @@ bool Receive_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 		client->accept) {
 
 		time_out++;
-		Sleep_Milli(1);
+		Sleep_Milli(WS_SLEEP_TIME);
 	}
 	if (time_out >= recv_timeout || !client->accept) {
 
