@@ -4,10 +4,12 @@ SDL_Texture *texture = NULL;
 int width = 800;
 int height = 600;
 
-bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx) {
+bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx, MOUSE_SERVICE *mouse_service) {
 	video->ctx = ctx;
 	video->main_loop = NULL;
 	video->main_loop_running = false;
+	video->mouse_service = mouse_service;
+	video->mouse_count = 1;
 
 	memset(video->nal_buffer, 0, MAX_NAL_SIZE);
 
@@ -22,8 +24,7 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx) {
 
 	// Create an SDL window and renderer
 	video->window = SDL_CreateWindow("YUV Rendering", SDL_WINDOWPOS_UNDEFINED,
-									 SDL_WINDOWPOS_UNDEFINED, width, height,
-									 SDL_WINDOW_OPENGL);
+		SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
 	video->renderer = SDL_CreateRenderer(video->window, -1, 0);
 
 	if (video->renderer == NULL) {
@@ -89,6 +90,48 @@ extern void broadwayOnHeadersDecoded() { printf("header decoded\n"); }
 
 void Main_TCP_Loop_VIDEO_SERVICE(void *arg) {
 	VIDEO_SERVICE *video = (VIDEO_SERVICE *)arg;
+
+	MOUSE_EVENT_T m_event;
+
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+		case SDL_MOUSEMOTION:
+			m_event.x = ((float)event.button.x)/* * sdl->x_scale*/;
+			m_event.y = ((float)event.button.y)/* * sdl->y_scale*/;
+			m_event.clicked = false;
+			m_event.state = MOUSE_ABS_COORD;
+			m_event.event_index = video->mouse_count++;
+			Send_CLIENT(video->mouse_service->c,
+				(char*) &m_event,
+				sizeof(MOUSE_EVENT_T));
+			
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			m_event.x = ((float)event.button.x)/* * sdl->x_scale*/;
+			m_event.y = ((float)event.button.y)/* * sdl->y_scale*/;
+			m_event.clicked = true;
+			m_event.state = 1;	// pressed
+			m_event.event_index = video->mouse_count++;
+			m_event.button = event.button.button;
+			Send_CLIENT(video->mouse_service->c,
+				(char*) &m_event,
+				sizeof(MOUSE_EVENT_T));
+			break;
+		case SDL_MOUSEBUTTONUP:
+			m_event.x = ((float)event.button.x)/* * sdl->x_scale*/;
+			m_event.y = ((float)event.button.y)/* * sdl->y_scale*/;
+			m_event.clicked = true;
+			m_event.state = 0;	// released
+			m_event.event_index = video->mouse_count++;
+			m_event.button = event.button.button;
+			Send_CLIENT(video->mouse_service->c,
+				(char*) &m_event,
+				sizeof(MOUSE_EVENT_T));
+			break;
+		}
+	}
+	
 	int size;
 	if (Receive_CLIENT(video->c, (char *)&size, sizeof(int)) &&
 		Receive_CLIENT(video->c, video->nal_buffer, size)) {
@@ -142,7 +185,7 @@ bool Connect_VIDEO_SERVICE(VIDEO_SERVICE *video, CLIENT *video_init,
 	video->main_loop_running = true;
 
 	emscripten_set_main_loop_arg(
-		[](void *arg) { Main_TCP_Loop_VIDEO_SERVICE(arg); }, video, 30, 1);
+		[](void *arg) { Main_TCP_Loop_VIDEO_SERVICE(arg); }, video, 60, 1);
 	// video->main_loop = new thread(Main_TCP_Loop_VIDEO_SERVICE, video);
 
 	return true;
