@@ -17,7 +17,7 @@ void Main_TCP_Loop_AUDIO_SERVICE(AUDIO_SERVICE *audio) {
                 if (Receive_CLIENT(audio->c, (char*) &size, sizeof(int)) &&
                         Receive_CLIENT(audio->c, audio->nal_buffer, size)) {
 			
-			cout << "received audio bytes " << size << endl;
+			//cout << "received audio bytes " << size << endl;
                 }
 	}
 }

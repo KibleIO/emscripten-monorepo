@@ -32,49 +32,57 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx) {
 
 	// Create an SDL texture
 	texture = SDL_CreateTexture(video->renderer, SDL_PIXELFORMAT_IYUV,
-								SDL_TEXTUREACCESS_STREAMING, width, height);
+		SDL_TEXTUREACCESS_STREAMING, width, height);
 	return true;
 }
 
-void yuv_to_pixels(uint8_t *data, size_t size) {
+void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height) {
 	// Lock the texture to get a pointer to the texture pixels
-	void *pixels;
-	int pitch;
-	SDL_LockTexture(texture, NULL, &pixels, &pitch);
+	uint8_t *dst;
+	int dst_width;
+	int dst_height = height;
+	SDL_LockTexture(texture, NULL, (void**) &dst, &dst_width);
 
 	// Copy the YUV bytes to the texture pixels pointer
-	int y_size = width * height;
-	int u_size = y_size / 4;
-	int v_size = y_size / 4;
-	unsigned char *y = data;
-	unsigned char *u = data + y_size;
-	unsigned char *v = data + y_size + u_size;
-	unsigned char *dst = (unsigned char *)pixels;
-	int dst_pitch = pitch;
+
+	int src_y_size = src_width * src_height;
+	int src_u_size = src_y_size / 4;
+	int src_v_size = src_y_size / 4;
+	unsigned char *src_y = src;
+	unsigned char *src_u = src + src_y_size;
+	unsigned char *src_v = src + src_y_size + src_u_size;
+
+	int dst_y_size = dst_width * dst_height;
+	int dst_u_size = dst_y_size / 4;
+	int dst_v_size = dst_y_size / 4;
+	unsigned char *dst_y = dst;
+	unsigned char *dst_u = dst + dst_y_size;
+	unsigned char *dst_v = dst + dst_y_size + dst_u_size;
+
 	for (int i = 0; i < height; i++) {
-		memcpy(dst, y, width);
-		dst += dst_pitch;
-		y += width;
-	}
-	dst = (unsigned char *)pixels + height * dst_pitch;
-	for (int i = 0; i < height / 2; i++) {
-		memcpy(dst, u, width / 2);
-		dst += dst_pitch / 2;
-		u += width / 2;
-	}
-	dst = (unsigned char *)pixels + height * dst_pitch * 5 / 4;
-	for (int i = 0; i < height / 2; i++) {
-		memcpy(dst, v, width / 2);
-		dst += dst_pitch / 2;
-		v += width / 2;
+		memcpy(dst_y, src_y, src_width);
+		dst_y += dst_width;
+		src_y += src_width;
 	}
 
+	for (int i = 0; i < height / 2; i++) {
+		memcpy(dst_u, src_u, src_width / 2);
+		dst_u += dst_width / 2;
+		src_u += src_width / 2;
+	}
+
+	for (int i = 0; i < height / 2; i++) {
+		memcpy(dst_v, src_v, src_width / 2);
+		dst_v += dst_width / 2;
+		src_v += src_width / 2;
+	}
+	
 	// Unlock the texture
 	SDL_UnlockTexture(texture);
 }
 
 extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height) {
-	yuv_to_pixels(buffer, (width * height * 3) / 2);
+	yuv_to_pixels(buffer, width, height);
 }
 
 extern void broadwayOnHeadersDecoded() { printf("header decoded\n"); }
@@ -94,17 +102,17 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg) {
 		SDL_RenderCopy(video->renderer, texture, NULL, NULL);
 		// Render the texture to the screen
 		SDL_RenderPresent(video->renderer);
-		cout << "before" << endl;
+		//cout << "before" << endl;
 
 		u32 i = 0;
 		do {
 			u8 *start = video->decoder.decInput.pStream;
 			u32 ret = broadwayDecode(&video->decoder);
-			printf("Decoded Unit #%d, Size: %d, Result: %d\n", i++,
-				   (video->decoder.decInput.pStream - start), ret);
+			//printf("Decoded Unit #%d, Size: %d, Result: %d\n", i++,
+			//	   (video->decoder.decInput.pStream - start), ret);
 		} while (video->decoder.decInput.dataLen > 0);
 
-		cout << "received video bytes " << size << endl;
+		//cout << "received video bytes " << size << endl;
 	}
 }
 
