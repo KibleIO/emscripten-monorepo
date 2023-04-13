@@ -19,6 +19,7 @@
 #define MAX_HOSTS 20
 #define MAX_ACCUMULATED_FRAMES 4
 #define WEB_SOCKET_TIME_OUT 10
+#define WS_SLEEP_TIME 1
 
 struct WEBSOCKET_ELEMENT {
 	int32_t		size;
