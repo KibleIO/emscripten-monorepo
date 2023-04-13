@@ -1,5 +1,11 @@
 #include "WS_SERVER_MASTER.h"
 
+int64_t getTime1() {
+	timeval start;
+	gettimeofday(&start, NULL);
+	return ((start.tv_sec) * 1000 + start.tv_usec / 1000.0) + 0.5;
+}
+
 int callback_dumb_increment(lws* wsi, lws_callback_reasons reason,
 	void* user, void* in, size_t len) {
 
@@ -41,6 +47,7 @@ int callback_dumb_increment(lws* wsi, lws_callback_reasons reason,
 			server->pool->push(temp);
 			break;
 		case LWS_CALLBACK_RECEIVE:
+
 			if (int(((uint8_t*) in)[0]) < 0 || int(((uint8_t*) in)[0]) >= MAX_HOSTS) {
 				log_err("invalid host id.");
 				break;
@@ -76,6 +83,7 @@ int callback_dumb_increment(lws* wsi, lws_callback_reasons reason,
 			temp->size = len - 1;
 
 			server->active_read[int(((uint8_t*) in)[0])]->push(temp);
+
             		break;
 		case LWS_CALLBACK_CLOSED:
 			server->accept = false;
@@ -201,16 +209,15 @@ bool Receive_WS_SERVER_MASTER(WS_SERVER_MASTER *server,
 	WEBSOCKET_ELEMENT *temp = NULL;
 	uint32_t time_out = 0;
 	uint8_t return_val;
-	int32_t sleep = recv_timeout / WEB_SOCKET_TIME_OUT;
 
 	while (server->active_read[server_index]->size() <= 0 &&
-		time_out < WEB_SOCKET_TIME_OUT &&
+		time_out < recv_timeout &&
 		server->accept) {
 
 		time_out++;
-		Sleep_Milli(sleep);
+		Sleep_Milli(1);
 	}
-	if (time_out >= WEB_SOCKET_TIME_OUT ||
+	if (time_out >= recv_timeout ||
 		!server->accept) {
 
 		return false;

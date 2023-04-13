@@ -5,6 +5,12 @@
 
 using namespace std;
 
+int64_t getTime() {
+	timeval start;
+	gettimeofday(&start, NULL);
+	return ((start.tv_sec) * 1000 + start.tv_usec / 1000.0) + 0.5;
+}
+
 int main() {
 	WS_SERVER_MASTER master_server;
 	if (!Initialize_WS_SERVER_MASTER(&master_server, 4000)) {
@@ -34,20 +40,17 @@ int main() {
 		return 0;
 	}
 
-	char buffer[100];
-	strcpy(buffer, "this is the third string");
+	int64_t time = getTime();
 
-	if (!Send_WS_SERVER(&server1, buffer, 34)) {
+	if (!Send_WS_SERVER(&server1, (char*) &time, sizeof(int64_t))) {
 		cout << "error6" << endl;
-	} else {
-		cout << "sent bytes" << endl;
 	}
 
-	if (!Receive_WS_SERVER(&server2, buffer, 50)) {
+	if (!Receive_WS_SERVER(&server2, (char*) &time, sizeof(int64_t))) {
 		cout << "error7" << endl;
-	} else {
-		cout << buffer << endl;
 	}
+
+	cout << (getTime() - time) << endl;
 
 	return 0;
 }
