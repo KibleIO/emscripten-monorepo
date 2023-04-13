@@ -13,8 +13,8 @@
 #include "../../Utilities/CONCURRENT_QUEUE.h"
 #include "../../Utilities/UTILS.h"
 
-#define WEB_SOCKET_POOL_SIZE 80
-#define MAX_WEBSOCKET_PACKET_SIZE 10000
+#define WEB_SOCKET_POOL_SIZE 40
+#define MAX_WEBSOCKET_PACKET_SIZE 40000
 #define WEB_SOCKET_SLEEP_TIME 1
 #define MAX_HOSTS 20
 #define MAX_ACCUMULATED_FRAMES 4
