@@ -13,7 +13,7 @@
 #include "../Broadway-H.264-decoder/Decoder/src/Decoder.h"
 
 // god have mercy on us
-#define MAX_NAL_SIZE 20000
+#define MAX_NAL_SIZE 40000
 
 extern SDL_Texture *texture;
 
