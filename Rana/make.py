@@ -9,11 +9,11 @@ import shutil
 import subprocess
 from subprocess import Popen, PIPE, STDOUT
 
-os.environ['EM_CONFIG'] = '/Users/kord/Documents/source.nosync/emsdk/.emscripten'
-s = open(os.path.expanduser(os.environ['EM_CONFIG']), 'r').read()
-exec(s)
+#os.environ['EM_CONFIG'] = '/Users/kord/Documents/source.nosync/emsdk/.emscripten'
+#s = open(os.path.expanduser(os.environ['EM_CONFIG']), 'r').read()
+#exec(s)
 
-sys.path.append(EMSCRIPTEN_ROOT)
+#sys.path.append(EMSCRIPTEN_ROOT)
 
 emcc_args = [
     # '-m32',
@@ -48,8 +48,8 @@ emcc_args = [
     # '-s', 'FORCE_ALIGNED_MEMORY=1', #why doesnt this work?
     # '-s', '''EXPORTED_FUNCTIONS=["_broadwayGetMajorVersion", "_broadwayGetMinorVersion", "_broadwayInit", "_broadwayExit", "_broadwayCreateStream", "_broadwayPlayStream", "_broadwayOnHeadersDecoded", "_broadwayOnPictureDecoded"]''',
     # '--closure', '1',
-    '--js-library', '/Users/kord/Documents/source.nosync/RANA_Emscripten/Rana/Broadway-H.264-decoder/Decoder/library.js',
-    '--preload-file', '/Users/kord/Documents/source.nosync/RANA_Emscripten/Rana/test2.h264@test2.h264',
+    '--js-library', 'Broadway-H.264-decoder/Decoder/library.js',
+    '--preload-file', 'test2.h264@test2.h264',
     # '--pre-js', 'Broadway-H.264-decoder/Decoder/download.js',
     # '-s', 'FULL_ES3=1',
     # '-s', 'MODULARIZE=1'

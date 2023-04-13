@@ -11,3 +11,6 @@ http-server
 install caddy
 brew install caddy
 run caddy: caddy run
+
+git submodule foreach git pull origin master
+git submodule update --init --recursive
