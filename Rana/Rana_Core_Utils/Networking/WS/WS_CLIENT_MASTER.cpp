@@ -1,4 +1,5 @@
 #include "WS_CLIENT_MASTER.h"
+#include "../../Utilities/TIMER.h"
 
 #ifdef __EMSCRIPTEN__
 
@@ -163,25 +164,30 @@ bool Send_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 bool Receive_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 	uint8_t* bytes, int32_t size, int32_t recv_timeout,
 	uint8_t client_index) {
-
+	
 	WEBSOCKET_ELEMENT *temp = NULL;
 	uint32_t time_out = 0;
 	uint8_t return_val;
-	int32_t sleep = recv_timeout / WEB_SOCKET_TIME_OUT;
-
+	TIMER time;
+	Start_TIMER(&time);
+	// int32_t sleep = recv_timeout / WEB_SOCKET_TIME_OUT;
+	// cout << "id: " << static_cast<unsigned>(client_index) << endl;
+	int i = 0;
 	while (client->active_read[client_index]->size() <= 0 &&
-		time_out < WEB_SOCKET_TIME_OUT &&
+		time_out < recv_timeout &&
 		client->accept) {
-
+		i++;
 		time_out++;
-		Sleep_Milli(sleep);
+		Sleep_Milli(1);
 	}
-	if (time_out >= WEB_SOCKET_TIME_OUT ||
+	cout << Stop_TIMER(&time) << "\n";
+	// cout << "loop: " << i << "\n";
+	if (time_out >= recv_timeout ||
 		!client->accept) {
 
 		return false;
 	}
-
+	
 	client->active_read[client_index]->pop(temp);
 
 	copy(temp->bytes, temp->bytes + size, bytes);
@@ -189,7 +195,6 @@ bool Receive_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 	temp->size = -1;
 
 	client->pool->push(temp);
-
 	return return_val;
 }
 

@@ -1,10 +1,13 @@
 #include "VIDEO_SERVICE.h"
 
+#include "../Utilities/TIMER.h"
+
 SDL_Texture *texture = NULL;
 int width = 800;
 int height = 600;
 
-bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx, MOUSE_SERVICE *mouse_service) {
+bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
+							  MOUSE_SERVICE *mouse_service) {
 	video->ctx = ctx;
 	video->main_loop = NULL;
 	video->main_loop_running = false;
@@ -24,7 +27,8 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx, MOUSE_SERVICE
 
 	// Create an SDL window and renderer
 	video->window = SDL_CreateWindow("YUV Rendering", SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
+									 SDL_WINDOWPOS_UNDEFINED, width, height,
+									 SDL_WINDOW_OPENGL);
 	video->renderer = SDL_CreateRenderer(video->window, -1, 0);
 
 	if (video->renderer == NULL) {
@@ -33,7 +37,7 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx, MOUSE_SERVICE
 
 	// Create an SDL texture
 	texture = SDL_CreateTexture(video->renderer, SDL_PIXELFORMAT_IYUV,
-		SDL_TEXTUREACCESS_STREAMING, width, height);
+								SDL_TEXTUREACCESS_STREAMING, width, height);
 	return true;
 }
 
@@ -42,7 +46,7 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height) {
 	uint8_t *dst;
 	int dst_width;
 	int dst_height = height;
-	SDL_LockTexture(texture, NULL, (void**) &dst, &dst_width);
+	SDL_LockTexture(texture, NULL, (void **)&dst, &dst_width);
 
 	// Copy the YUV bytes to the texture pixels pointer
 
@@ -77,7 +81,7 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height) {
 		dst_v += dst_width / 2;
 		src_v += src_width / 2;
 	}
-	
+
 	// Unlock the texture
 	SDL_UnlockTexture(texture);
 }
@@ -89,6 +93,7 @@ extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height) {
 extern void broadwayOnHeadersDecoded() { printf("header decoded\n"); }
 
 void Main_TCP_Loop_VIDEO_SERVICE(void *arg) {
+	//============== < 1ms
 	VIDEO_SERVICE *video = (VIDEO_SERVICE *)arg;
 
 	MOUSE_EVENT_T m_event;
@@ -97,44 +102,44 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg) {
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 		case SDL_MOUSEMOTION:
-			m_event.x = ((float)event.button.x)/* * sdl->x_scale*/;
-			m_event.y = ((float)event.button.y)/* * sdl->y_scale*/;
+			m_event.x = ((float)event.button.x) /* * sdl->x_scale*/;
+			m_event.y = ((float)event.button.y) /* * sdl->y_scale*/;
 			m_event.clicked = false;
 			m_event.state = MOUSE_ABS_COORD;
 			m_event.event_index = video->mouse_count++;
-			Send_CLIENT(video->mouse_service->c,
-				(char*) &m_event,
-				sizeof(MOUSE_EVENT_T));
-			
+			Send_CLIENT(video->mouse_service->c, (char *)&m_event,
+						sizeof(MOUSE_EVENT_T));
+
 			break;
 		case SDL_MOUSEBUTTONDOWN:
-			m_event.x = ((float)event.button.x)/* * sdl->x_scale*/;
-			m_event.y = ((float)event.button.y)/* * sdl->y_scale*/;
+			m_event.x = ((float)event.button.x) /* * sdl->x_scale*/;
+			m_event.y = ((float)event.button.y) /* * sdl->y_scale*/;
 			m_event.clicked = true;
 			m_event.state = 1;	// pressed
 			m_event.event_index = video->mouse_count++;
 			m_event.button = event.button.button;
-			Send_CLIENT(video->mouse_service->c,
-				(char*) &m_event,
-				sizeof(MOUSE_EVENT_T));
+			Send_CLIENT(video->mouse_service->c, (char *)&m_event,
+						sizeof(MOUSE_EVENT_T));
 			break;
 		case SDL_MOUSEBUTTONUP:
-			m_event.x = ((float)event.button.x)/* * sdl->x_scale*/;
-			m_event.y = ((float)event.button.y)/* * sdl->y_scale*/;
+			m_event.x = ((float)event.button.x) /* * sdl->x_scale*/;
+			m_event.y = ((float)event.button.y) /* * sdl->y_scale*/;
 			m_event.clicked = true;
 			m_event.state = 0;	// released
 			m_event.event_index = video->mouse_count++;
 			m_event.button = event.button.button;
-			Send_CLIENT(video->mouse_service->c,
-				(char*) &m_event,
-				sizeof(MOUSE_EVENT_T));
+			Send_CLIENT(video->mouse_service->c, (char *)&m_event,
+						sizeof(MOUSE_EVENT_T));
 			break;
 		}
 	}
+	//==============
 	
+	//============== < 10ms && < 70ms
 	int size;
 	if (Receive_CLIENT(video->c, (char *)&size, sizeof(int)) &&
 		Receive_CLIENT(video->c, video->nal_buffer, size)) {
+		//============== < 5ms
 		video->decoder.streamStop = (u8 *)video->nal_buffer + size;
 		video->decoder.decInput.pStream = (u8 *)video->nal_buffer;
 		video->decoder.decInput.dataLen = size;
@@ -145,18 +150,20 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg) {
 		SDL_RenderCopy(video->renderer, texture, NULL, NULL);
 		// Render the texture to the screen
 		SDL_RenderPresent(video->renderer);
-		//cout << "before" << endl;
+		// cout << "before" << endl;
+		//==============
 
+		//============== < 5ms
 		u32 i = 0;
 		do {
 			u8 *start = video->decoder.decInput.pStream;
 			u32 ret = broadwayDecode(&video->decoder);
-			//printf("Decoded Unit #%d, Size: %d, Result: %d\n", i++,
+			// printf("Decoded Unit #%d, Size: %d, Result: %d\n", i++,
 			//	   (video->decoder.decInput.pStream - start), ret);
 		} while (video->decoder.decInput.dataLen > 0);
-
-		//cout << "received video bytes " << size << endl;
+		//==============
 	}
+	//==============
 }
 
 bool Resize_VIDEO_SERVICE(VIDEO_SERVICE *video, int width, int height) {
@@ -183,7 +190,7 @@ bool Connect_VIDEO_SERVICE(VIDEO_SERVICE *video, CLIENT *video_init,
 	ASSERT_E_R(Receive_CLIENT(video_init, video->nal_buffer, size),
 			   "Failed to receive headers", video->ctx);
 	video->main_loop_running = true;
-
+	
 	emscripten_set_main_loop_arg(
 		[](void *arg) { Main_TCP_Loop_VIDEO_SERVICE(arg); }, video, 60, 1);
 	// video->main_loop = new thread(Main_TCP_Loop_VIDEO_SERVICE, video);
