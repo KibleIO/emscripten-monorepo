@@ -11,8 +11,10 @@
 #include "../Rana_Core_Utils/Utilities/ASSERT.h"
 #include "../Rana_Core_Utils/Utilities/KCONTEXT.h"
 #include "../Rana_Core_Utils/Utilities/MOUSE.h"
+#include "../Rana_Core_Utils/Utilities/KEYBOARD.h"
 #include "../Broadway-H.264-decoder/Decoder/src/Decoder.h"
 #include "MOUSE_SERVICE.h"
+#include "KEYBOARD_SERVICE.h"
 
 // god have mercy on us
 #define MAX_NAL_SIZE 40000
@@ -37,11 +39,13 @@ struct VIDEO_SERVICE {
 	int stop = 0;
 	int counter = 0;
 	int mouse_count;
+	int keyboard_count;
 
 	MOUSE_SERVICE *mouse_service;
+	KEYBOARD_SERVICE *keyboard_service;
 };
 
-bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *, KCONTEXT *, MOUSE_SERVICE *);
+bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *, KCONTEXT *, MOUSE_SERVICE *, KEYBOARD_SERVICE *);
 void Main_TCP_Loop_VIDEO_SERVICE(void *);
 void Main_UDP_Loop_VIDEO_SERVICE(VIDEO_SERVICE *);
 bool Connect_VIDEO_SERVICE(VIDEO_SERVICE *, CLIENT *, CLIENT *);
