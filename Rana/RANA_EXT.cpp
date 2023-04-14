@@ -12,7 +12,7 @@ bool Initialize_RANA_EXT(RANA_EXT *rana_ext, KCONTEXT *ctx) {
 		rana_ext->ctx)), "Couldn't initialize keyboard service",
 		rana_ext->ctx);
 	ASSERT_E_R((Initialize_VIDEO_SERVICE(&rana_ext->video,
-		rana_ext->ctx, &rana_ext->mouse)), "Couldn't initialize video service",
+		rana_ext->ctx, &rana_ext->mouse, &rana_ext->keyboard)), "Couldn't initialize video service",
 		rana_ext->ctx);
 	ASSERT_E_R((Initialize_UI_SERVICE(&rana_ext->ui,
 		rana_ext->ctx, &rana_ext->mouse, &rana_ext->keyboard,

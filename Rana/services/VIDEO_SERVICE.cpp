@@ -7,12 +7,14 @@ int width = 800;
 int height = 600;
 
 bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
-							  MOUSE_SERVICE *mouse_service) {
+							  MOUSE_SERVICE *mouse_service, KEYBOARD_SERVICE *keyboard_service) {
 	video->ctx = ctx;
 	video->main_loop = NULL;
 	video->main_loop_running = false;
 	video->mouse_service = mouse_service;
+	video->keyboard_service = keyboard_service;
 	video->mouse_count = 1;
+	video->keyboard_count = 1;
 
 	memset(video->nal_buffer, 0, MAX_NAL_SIZE);
 
@@ -97,6 +99,7 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg) {
 	VIDEO_SERVICE *video = (VIDEO_SERVICE *)arg;
 
 	MOUSE_EVENT_T m_event;
+	KEYBOARD_EVENT_T k_event;
 
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -130,6 +133,22 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg) {
 			m_event.button = event.button.button;
 			Send_CLIENT(video->mouse_service->c, (char *)&m_event,
 						sizeof(MOUSE_EVENT_T));
+			break;
+		case SDL_KEYDOWN:
+			k_event.code = event.key.keysym.sym;
+			k_event.value = 1;
+			k_event.event_index = video->keyboard_count++;
+			Send_CLIENT(video->keyboard_service->c,
+				(char*) &k_event,
+				sizeof(KEYBOARD_EVENT_T));
+			break;
+		case SDL_KEYUP:
+			k_event.code = event.key.keysym.sym;
+			k_event.value = 0;
+			k_event.event_index = video->keyboard_count++;
+			Send_CLIENT(video->keyboard_service->c,
+				(char*) &k_event,
+				sizeof(KEYBOARD_EVENT_T));
 			break;
 		}
 	}
