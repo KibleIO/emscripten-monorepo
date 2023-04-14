@@ -1,8 +1,16 @@
 #include "WS_CLIENT_MASTER.h"
 #include "WS_CLIENT.h"
 #include <iostream>
+#include <sys/time.h>
+#include <unistd.h>
 
 using namespace std;
+
+int64_t getTime() {
+	timeval start;
+	gettimeofday(&start, NULL);
+	return ((start.tv_sec) * 1000 + start.tv_usec / 1000.0) + 0.5;
+}
 
 int main() {
 	cout << "step 0" << endl;
@@ -43,19 +51,17 @@ int main() {
 		return 0;
 	}
 
-	char hello[100];
-	strcpy(hello, "this is the first string");
+	int64_t time, time2;
 
-	if (!Receive_WS_CLIENT(&client, hello, 34)) {
+	if (!Receive_WS_CLIENT(&client, (char*) &time, sizeof(int64_t))) {
 		cout << "coudn't receive6" << endl;
-	} else {
-		cout << hello << endl;
 	}
-	strcpy(hello, "this is the second string");
 
-	if (!Send_WS_CLIENT(&client2, hello, 50)) {
+	time2 = getTime();
+
+	if (!Send_WS_CLIENT(&client2, (char*) &time2, sizeof(int64_t))) {
 		cout << "coudn't send" << endl;
-	} else {
-		cout << "sent" << endl;
 	}
+
+	cout << (time2 - time) << endl;
 }

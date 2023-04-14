@@ -108,7 +108,7 @@ bool Initialize_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 	address += to_string(port);
 
 	EmscriptenWebSocketCreateAttributes ws_attrs = {
-		address.c_str(), NULL, EM_TRUE
+		address.c_str(), NULL, EM_FALSE
 	};
 
 	EMSCRIPTEN_WEBSOCKET_T ws = emscripten_websocket_new(&ws_attrs);
@@ -153,16 +153,15 @@ bool Receive_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 	WEBSOCKET_ELEMENT *temp = NULL;
 	uint32_t time_out = 0;
 	uint8_t return_val;
-	int32_t sleep = recv_timeout / WEB_SOCKET_TIME_OUT;
 
 	while (client->active_read[client_index]->size() <= 0 &&
-		time_out < WEB_SOCKET_TIME_OUT &&
+		time_out < recv_timeout &&
 		client->accept) {
 
 		time_out++;
-		Sleep_Milli(sleep);
+		Sleep_Milli(WS_SLEEP_TIME);
 	}
-	if (time_out >= WEB_SOCKET_TIME_OUT ||
+	if (time_out >= recv_timeout ||
 		!client->accept) {
 
 		return false;

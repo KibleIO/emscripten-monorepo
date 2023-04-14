@@ -116,7 +116,7 @@ bool Initialize_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client, KCONTEXT *ctx,
 	address += to_string(port);
 
 	EmscriptenWebSocketCreateAttributes ws_attrs = {
-		address.c_str(), NULL, EM_TRUE
+		address.c_str(), NULL, EM_FALSE
 	};
 
 	EMSCRIPTEN_WEBSOCKET_T ws = emscripten_websocket_new(&ws_attrs);
@@ -178,12 +178,9 @@ bool Receive_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 		client->accept) {
 		i++;
 		time_out++;
-		Sleep_Milli(1);
+		Sleep_Milli(WS_SLEEP_TIME);
 	}
-	cout << Stop_TIMER(&time) << "\n";
-	// cout << "loop: " << i << "\n";
-	if (time_out >= recv_timeout ||
-		!client->accept) {
+	if (time_out >= recv_timeout || !client->accept) {
 
 		return false;
 	}

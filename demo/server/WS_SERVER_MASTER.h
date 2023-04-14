@@ -6,6 +6,7 @@
 #include <libwebsockets.h>
 #include "CONCURRENT_QUEUE.h"
 #include "utils.h"
+#include "TIMER.h"
 
 #define WEB_SOCKET_POOL_SIZE 80
 #define MAX_WEBSOCKET_PACKET_SIZE 100000
