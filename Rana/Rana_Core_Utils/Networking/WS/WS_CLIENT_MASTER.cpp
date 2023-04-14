@@ -180,6 +180,8 @@ bool Receive_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 		time_out++;
 		Sleep_Milli(WS_SLEEP_TIME);
 	}
+	cout << "loop: " << i << "\n";
+	cout << Stop_TIMER(&time) << "\n";
 	if (time_out >= recv_timeout || !client->accept) {
 
 		return false;
