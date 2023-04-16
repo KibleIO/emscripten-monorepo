@@ -36,7 +36,7 @@ bool Initialize_AUDIO_SERVICE(AUDIO_SERVICE *audio, KCONTEXT *ctx) {
 	desiredSpec.format = AUDIO_S16SYS;
 	desiredSpec.channels = CHANNELS;
 	desiredSpec.samples = SAMPLES_PER_FRAME;
-	desiredSpec.callback = audio_callback; // Set the audio callback function
+	// desiredSpec.callback = audio_callback; // Set the audio callback function
 
 
 	// Open the audio device
@@ -47,7 +47,6 @@ bool Initialize_AUDIO_SERVICE(AUDIO_SERVICE *audio, KCONTEXT *ctx) {
 		printf("SDL_OpenAudioDevice() failed: %s\n", SDL_GetError());
 		return 1;
 	}
-	SDL_PauseAudio(0);
 	return true;
 }
 
@@ -60,11 +59,8 @@ void Main_TCP_Loop_AUDIO_SERVICE(AUDIO_SERVICE *audio) {
 			int num_samples = opus_decode(
 				audio->decoder, (const unsigned char *)audio->nal_buffer, size,
 				audio->pcm, 960, 0);
-			if (num_samples < 0) {
-				// cout << "error when decoding bytes" <<  endl;
-			} else {
-				SDL_QueueAudio(audio->audioDevice, audio->pcm, sizeof(audio->pcm));
-				// SDL_Delay(SAMPLES_PER_FRAME * 1000 / SAMPLE_RATE);
+			if (num_samples >= 0) {
+				SDL_QueueAudio(audio->audioDevice, audio->pcm, num_samples * CHANNELS * 2);
 			}
 		}
 	}
@@ -77,7 +73,8 @@ bool Connect_AUDIO_SERVICE(AUDIO_SERVICE *audio, CLIENT *c) {
 
 	audio->main_loop_running = true;
 	
-	// audio->main_loop = new thread(Main_TCP_Loop_AUDIO_SERVICE, audio);
+	SDL_PauseAudioDevice(audio->audioDevice, 0);
+	audio->main_loop = new thread(Main_TCP_Loop_AUDIO_SERVICE, audio);
 
 	return true;
 }
