@@ -10,10 +10,11 @@
 #include "../Rana_Core_Utils/Utilities/KCONTEXT.h"
 #include "/Users/kord/Documents/source.nosync/opus/include/opus.h"
 
+#define FRAME_SIZE_MS 20
 #define MAX_NAL_SIZE 2000
 #define SAMPLE_RATE 48000  // Sample rate in Hz
 #define CHANNELS 2	// Number of audio channels (1 for mono, 2 for stereo)
-#define SAMPLES_PER_FRAME 960  // Number of samples per audio frame
+#define SAMPLES_PER_FRAME (FRAME_SIZE_MS * SAMPLE_RATE / 1000)  // Number of samples per audio frame
 
 struct AUDIO_SERVICE {
 	KCONTEXT *ctx;
