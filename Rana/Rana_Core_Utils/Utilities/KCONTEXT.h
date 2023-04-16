@@ -11,8 +11,10 @@
 
 struct KCONTEXT{
 	SCREEN_DIM screen_dim;
+	bool screen_dim_changed;
 };
 
+void Initialize_KCONTEXT(KCONTEXT*);
 SCREEN_DIM Get_Screen_Dim_KCONTEXT(KCONTEXT*);
 void Set_Screen_Dim_KCONTEXT(KCONTEXT*, SCREEN_DIM);
 

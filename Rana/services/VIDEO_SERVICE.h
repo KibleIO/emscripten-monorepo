@@ -26,6 +26,9 @@
 #define MAXIMUM_WIDTH 1920
 #define MAXIMUM_HEIGHT 1080
 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
 struct VIDEO_SERVICE {
 	KCONTEXT *ctx;
 

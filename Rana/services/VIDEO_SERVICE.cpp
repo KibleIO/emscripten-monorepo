@@ -1,6 +1,26 @@
 #include "VIDEO_SERVICE.h"
 
-void Early_Resize_Function_VIDEO_SERVICE(KCONTEXT *ctx, VIDEO_SERVICE *video) {
+static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData) {
+	VIDEO_SERVICE *video = (VIDEO_SERVICE*) userData;
+
+	/*
+	int width;
+	int height;
+
+	get_screen_width_height(&width, &height);
+	*/
+
+	SDL_Event event;
+	event.type = SDL_WINDOWEVENT;
+	event.window.event = SDL_WINDOWEVENT_RESIZED;
+	//event.window.data1 = width;
+	//event.window.data2 = height;
+	SDL_PushEvent(&event);
+
+	return 0;
+}
+
+void Early_Resize_Function_VIDEO_SERVICE(VIDEO_SERVICE *video) {
 	get_screen_width_height(&video->width, &video->height);
 
 	bool changed = false;
@@ -39,10 +59,19 @@ void Early_Resize_Function_VIDEO_SERVICE(KCONTEXT *ctx, VIDEO_SERVICE *video) {
 		//video->x_scale = float(video->width) / float(temp_width);
 		//video->y_scale = float(video->height) / float(temp_height);
 
-		Set_Screen_Dim_KCONTEXT(ctx, (SCREEN_DIM) {
+		Set_Screen_Dim_KCONTEXT(video->ctx, (SCREEN_DIM) {
 		video->width,
 		video->width,
 		video->height});
+
+		SDL_SetWindowSize(video->window, video->width, video->height);
+
+		if (video->texture != NULL) {
+			SDL_DestroyTexture(video->texture);
+		}
+
+		video->texture = SDL_CreateTexture(video->renderer, SDL_PIXELFORMAT_IYUV,
+			SDL_TEXTUREACCESS_STREAMING, video->width, video->height);
 
 		/*
 		SDL_DestroyTexture(sdl->screen_texture);
@@ -72,6 +101,7 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
 	video->keyboard_service = keyboard_service;
 	video->mouse_count = 1;
 	video->keyboard_count = 1;
+	video->texture = NULL;
 
 	memset(video->nal_buffer, 0, MAX_NAL_SIZE);
 
@@ -84,12 +114,10 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
 	// Initialize SDL
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
-	Early_Resize_Function_VIDEO_SERVICE(ctx, video);
-
 	// Create an SDL window and renderer
 	video->window = SDL_CreateWindow("YUV Rendering",
-		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, video->width,
-		video->height, SDL_WINDOW_OPENGL);
+		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800,
+		600, SDL_WINDOW_OPENGL);
 
 	video->renderer = SDL_CreateRenderer(video->window, -1, 0);
 
@@ -97,9 +125,11 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
 		printf("Failed to create renderer: %s\n", SDL_GetError());
 	}
 
-	// Create an SDL texture
-	video->texture = SDL_CreateTexture(video->renderer, SDL_PIXELFORMAT_IYUV,
-		SDL_TEXTUREACCESS_STREAMING, video->width, video->height);
+	Early_Resize_Function_VIDEO_SERVICE(video);
+
+	emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW,
+		(void*) video, 0, Emscripten_HandleResize);
+	
 	return true;
 }
 
@@ -130,20 +160,23 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 	unsigned char *dst_u = dst + dst_y_size;
 	unsigned char *dst_v = dst + dst_y_size + dst_u_size;
 
-	for (int i = 0; i < video->height; i++) {
-		memcpy(dst_y, src_y, src_width);
+	int iterator_height = MIN(video->height, src_height);
+	int iterator_width = MIN(video->width, src_width);
+
+	for (int i = 0; i < iterator_height; i++) {
+		memcpy(dst_y, src_y, iterator_width);
 		dst_y += dst_width;
 		src_y += src_width;
 	}
 
-	for (int i = 0; i < video->height / 2; i++) {
-		memcpy(dst_u, src_u, src_width / 2);
+	for (int i = 0; i < iterator_height / 2; i++) {
+		memcpy(dst_u, src_u, iterator_width / 2);
 		dst_u += dst_width / 2;
 		src_u += src_width / 2;
 	}
 
-	for (int i = 0; i < video->height / 2; i++) {
-		memcpy(dst_v, src_v, src_width / 2);
+	for (int i = 0; i < iterator_height / 2; i++) {
+		memcpy(dst_v, src_v, iterator_width / 2);
 		dst_v += dst_width / 2;
 		src_v += src_width / 2;
 	}
@@ -170,6 +203,9 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 
 	MOUSE_EVENT_T m_event;
 	KEYBOARD_EVENT_T k_event;
+
+	int temp_width;
+	int temp_height;
 
 	while (video->main_loop_running) {
 		SDL_Event event;
@@ -220,6 +256,11 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 				Send_CLIENT(video->keyboard_service->c,
 					(char*) &k_event,
 					sizeof(KEYBOARD_EVENT_T));
+				break;
+			case SDL_WINDOWEVENT:
+				if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+					Early_Resize_Function_VIDEO_SERVICE(video);
+				}
 				break;
 			}
 		}

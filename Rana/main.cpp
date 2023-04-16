@@ -10,6 +10,8 @@ int main() {
 		ADD_STR_LOG("version", SOFTWARE_VERSION);
 	}
 
+	Initialize_KCONTEXT(&ctx);
+
 	ASSERT_E_R((Initialize_RANA_EXT(&rana_ext, &ctx)),
 			   "failed to initialize rana_ext", &ctx);
 
