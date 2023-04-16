@@ -7,6 +7,12 @@ bool Initialize_AUDIO_SERVICE(AUDIO_SERVICE *audio, KCONTEXT *ctx) {
 
 	memset(audio->nal_buffer, 0, MAX_NAL_SIZE);
 
+	int error;
+	audio->decoder = opus_decoder_create(48000, 2, &error);
+	if (error != OPUS_OK) {
+		return false;
+	}
+
 	return true;
 }
 
@@ -14,11 +20,18 @@ void Main_TCP_Loop_AUDIO_SERVICE(AUDIO_SERVICE *audio) {
 	int size;
 
 	while (audio->main_loop_running) {
-                if (Receive_CLIENT(audio->c, (char*) &size, sizeof(int)) &&
-                        Receive_CLIENT(audio->c, audio->nal_buffer, size)) {
-			
-			//cout << "received audio bytes " << size << endl;
-                }
+		if (Receive_CLIENT(audio->c, (char *)&size, sizeof(int)) &&
+			Receive_CLIENT(audio->c, audio->nal_buffer, size)) {
+			opus_int16 *pcm;
+			int frame_size;
+
+			int num_samples = opus_decode(
+				audio->decoder, (const unsigned char *)audio->nal_buffer, size,
+				pcm, frame_size, 0);
+			if (num_samples < 0) {
+				cout << "error when decoding bytes" << endl;
+			}
+		}
 	}
 }
 
@@ -40,7 +53,7 @@ void Disconnect_AUDIO_SERVICE(AUDIO_SERVICE *audio) {
 		delete audio->main_loop;
 		audio->main_loop = NULL;
 	}
+	opus_decoder_destroy(audio->decoder);
 }
 
-void Delete_AUDIO_SERVICE(AUDIO_SERVICE *audio) {
-}
+void Delete_AUDIO_SERVICE(AUDIO_SERVICE *audio) {}

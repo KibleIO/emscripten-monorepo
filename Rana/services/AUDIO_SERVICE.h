@@ -1,6 +1,7 @@
 #ifndef AUDIO_SERVICE_H_
 #define AUDIO_SERVICE_H_
 
+#include "/Users/kord/Documents/source.nosync/opus/include/opus.h"
 #include <thread>
 #include "../Rana_Core_Utils/Utilities/ASSERT.h"
 #include "../Rana_Core_Utils/Utilities/KCONTEXT.h"
@@ -14,6 +15,7 @@ struct AUDIO_SERVICE {
 	thread *main_loop;
 	volatile bool main_loop_running;
 	char nal_buffer[MAX_NAL_SIZE];
+	OpusDecoder *decoder;
 };
 
 bool Initialize_AUDIO_SERVICE(AUDIO_SERVICE*, KCONTEXT*);
