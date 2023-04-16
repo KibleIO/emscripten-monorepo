@@ -65,6 +65,7 @@ EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 	client->pool->pop(temp);
 
 	if (len > MAX_WEBSOCKET_PACKET_SIZE) {
+		cout << "truncate packet " << len << endl;
 		//log_err("received large packet. truncated.");
 		len = MAX_WEBSOCKET_PACKET_SIZE;
 	}

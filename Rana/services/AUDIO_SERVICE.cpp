@@ -5,7 +5,7 @@ bool Initialize_AUDIO_SERVICE(AUDIO_SERVICE *audio, KCONTEXT *ctx) {
 	audio->main_loop = NULL;
 	audio->main_loop_running = false;
 
-	memset(audio->nal_buffer, 0, MAX_NAL_SIZE);
+	memset(audio->nal_buffer, 0, MAX_NAL_SIZE1);
 
 	return true;
 }

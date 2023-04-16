@@ -1,8 +1,77 @@
 #include "VIDEO_SERVICE.h"
 
 SDL_Texture *texture = NULL;
-int width = 800;
-int height = 600;
+int width = 1472;
+int height = 832;
+
+void Early_Resize_Function_VIDEO_SERVICE(VIDEO_SERVICE *video) {
+	int temp_width;
+	int temp_height;
+	double canvasWidth;
+	double canvasHeight;
+	EMSCRIPTEN_RESULT res = emscripten_get_element_css_size("#canvas",
+		&canvasWidth, &canvasHeight);
+
+	temp_width = canvasWidth;
+	temp_height = canvasHeight;
+
+	video->width = temp_width;
+	video->height = temp_height;
+	bool changed = false;
+
+	if (video->width < MINIMUM_WIDTH) {
+		video->width = MINIMUM_WIDTH;
+		changed = true;
+	}
+
+	if (video->height < MINIMUM_HEIGHT) {
+		video->height = MINIMUM_HEIGHT;
+		changed = true;
+	}
+
+	if (video->width > MAXIMUM_WIDTH) {
+		video->width = MAXIMUM_WIDTH;
+		changed = true;
+	}
+
+	if (video->height > MAXIMUM_HEIGHT) {
+		video->height = MAXIMUM_HEIGHT;
+		changed = true;
+	}
+
+	if (video->width % 32 != 0) {
+		video->width = (video->width / 32) * 32;
+		changed = true;
+	}
+
+	if (video->height % 32 != 0) {
+		video->height = (video->height / 32) * 32;
+		changed = true;
+	}
+
+	if (changed) {
+		video->x_scale = float(video->width) / float(temp_width);
+		video->y_scale = float(video->height) / float(temp_height);
+
+		cout << video->width << " " << video->height << " " << temp_width << " " << temp_height << " " << video->x_scale << " " << video->y_scale << endl;
+
+		/*
+		SDL_DestroyTexture(sdl->screen_texture);
+
+		SDL_RenderSetLogicalSize(sdl->renderer, temp_width, temp_height);
+
+		SDL_RenderPresent(sdl->renderer);
+		SDL_RenderClear(sdl->renderer);
+
+		sdl->screen_texture =
+			SDL_CreateTexture(sdl->renderer, SDL_PIXELFORMAT_ARGB8888,
+			SDL_TEXTUREACCESS_STREAMING, sdl->width, sdl->height);
+		SDL_SetTextureBlendMode(sdl->screen_texture, SDL_BLENDMODE_BLEND);
+
+		Resize_ULTRALIGHT_WRAPPER(&sdl->ultralight, sdl->width, sdl->height);
+		*/
+	}
+}
 
 bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
 							  MOUSE_SERVICE *mouse_service, KEYBOARD_SERVICE *keyboard_service) {
@@ -25,10 +94,13 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
 	// Initialize SDL
 	SDL_Init(SDL_INIT_VIDEO);
 
+	Early_Resize_Function_VIDEO_SERVICE(video);
+
 	// Create an SDL window and renderer
 	video->window = SDL_CreateWindow("YUV Rendering", SDL_WINDOWPOS_UNDEFINED,
 									 SDL_WINDOWPOS_UNDEFINED, width, height,
 									 SDL_WINDOW_OPENGL);
+
 	video->renderer = SDL_CreateRenderer(video->window, -1, 0);
 
 	if (video->renderer == NULL) {
@@ -108,8 +180,8 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_MOUSEMOTION:
-				m_event.x = ((float)event.button.x) /* * sdl->x_scale*/;
-				m_event.y = ((float)event.button.y) /* * sdl->y_scale*/;
+				m_event.x = ((float)event.button.x)/* * video->x_scale */;
+				m_event.y = ((float)event.button.y)/* * video->y_scale*/;
 				m_event.clicked = false;
 				m_event.state = MOUSE_ABS_COORD;
 				m_event.event_index = video->mouse_count++;
@@ -118,8 +190,8 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				m_event.x = ((float)event.button.x) /* * sdl->x_scale*/;
-				m_event.y = ((float)event.button.y) /* * sdl->y_scale*/;
+				m_event.x = ((float)event.button.x)/* * video->x_scale*/;
+				m_event.y = ((float)event.button.y)/* * video->y_scale*/;
 				m_event.clicked = true;
 				m_event.state = 1;	// pressed
 				m_event.event_index = video->mouse_count++;
@@ -128,8 +200,8 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 							sizeof(MOUSE_EVENT_T));
 				break;
 			case SDL_MOUSEBUTTONUP:
-				m_event.x = ((float)event.button.x) /* * sdl->x_scale*/;
-				m_event.y = ((float)event.button.y) /* * sdl->y_scale*/;
+				m_event.x = ((float)event.button.x)/* * video->x_scale*/;
+				m_event.y = ((float)event.button.y)/* * video->y_scale*/;
 				m_event.clicked = true;
 				m_event.state = 0;	// released
 				m_event.event_index = video->mouse_count++;

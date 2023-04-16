@@ -6,14 +6,14 @@
 #include "../Rana_Core_Utils/Utilities/KCONTEXT.h"
 #include "../Rana_Core_Utils/Hermes/CLIENT.h"
 
-#define MAX_NAL_SIZE 2000
+#define MAX_NAL_SIZE1 2000
 
 struct AUDIO_SERVICE {
 	KCONTEXT *ctx;
 	CLIENT *c;
 	thread *main_loop;
 	volatile bool main_loop_running;
-	char nal_buffer[MAX_NAL_SIZE];
+	char nal_buffer[MAX_NAL_SIZE1];
 };
 
 bool Initialize_AUDIO_SERVICE(AUDIO_SERVICE*, KCONTEXT*);
