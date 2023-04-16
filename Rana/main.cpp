@@ -1,4 +1,4 @@
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <emscripten.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +15,7 @@
 #include "Rana_Core_Utils/Utilities/FPS_LIMITER.h"
 
 int main() {
-	KCONTEXT ctx;Ø
+	KCONTEXT ctx;
 
 	FILE *finput;
 	RANA_EXT rana_ext;

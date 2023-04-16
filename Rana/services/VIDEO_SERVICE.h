@@ -1,7 +1,7 @@
 #ifndef VIDEO_SERVICE_H_
 #define VIDEO_SERVICE_H_
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <emscripten.h>
 
 #include <thread>
