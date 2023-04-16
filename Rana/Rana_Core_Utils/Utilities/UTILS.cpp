@@ -22,3 +22,14 @@ void log_dbg(char *hello) {
 void log_err(char *hello) {
 	cout << hello << endl;
 }
+
+void get_screen_width_height(int *width, int *height) {
+	double canvasWidth;
+	double canvasHeight;
+	EMSCRIPTEN_RESULT res = emscripten_get_element_css_size("#canvas",
+		&canvasWidth, &canvasHeight);
+	
+	*width = canvasWidth;
+	*height = canvasHeight;
+}
+

@@ -1,22 +1,8 @@
 #include "VIDEO_SERVICE.h"
 
-SDL_Texture *texture = NULL;
-int width = 1472;
-int height = 832;
+void Early_Resize_Function_VIDEO_SERVICE(KCONTEXT *ctx, VIDEO_SERVICE *video) {
+	get_screen_width_height(&video->width, &video->height);
 
-void Early_Resize_Function_VIDEO_SERVICE(VIDEO_SERVICE *video) {
-	int temp_width;
-	int temp_height;
-	double canvasWidth;
-	double canvasHeight;
-	EMSCRIPTEN_RESULT res = emscripten_get_element_css_size("#canvas",
-		&canvasWidth, &canvasHeight);
-
-	temp_width = canvasWidth;
-	temp_height = canvasHeight;
-
-	video->width = temp_width;
-	video->height = temp_height;
 	bool changed = false;
 
 	if (video->width < MINIMUM_WIDTH) {
@@ -50,10 +36,13 @@ void Early_Resize_Function_VIDEO_SERVICE(VIDEO_SERVICE *video) {
 	}
 
 	if (changed) {
-		video->x_scale = float(video->width) / float(temp_width);
-		video->y_scale = float(video->height) / float(temp_height);
+		//video->x_scale = float(video->width) / float(temp_width);
+		//video->y_scale = float(video->height) / float(temp_height);
 
-		cout << video->width << " " << video->height << " " << temp_width << " " << temp_height << " " << video->x_scale << " " << video->y_scale << endl;
+		Set_Screen_Dim_KCONTEXT(ctx, (SCREEN_DIM) {
+		video->width,
+		video->width,
+		video->height});
 
 		/*
 		SDL_DestroyTexture(sdl->screen_texture);
@@ -74,7 +63,8 @@ void Early_Resize_Function_VIDEO_SERVICE(VIDEO_SERVICE *video) {
 }
 
 bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
-							  MOUSE_SERVICE *mouse_service, KEYBOARD_SERVICE *keyboard_service) {
+	MOUSE_SERVICE *mouse_service, KEYBOARD_SERVICE *keyboard_service) {
+	
 	video->ctx = ctx;
 	video->main_loop = NULL;
 	video->main_loop_running = false;
@@ -88,18 +78,18 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
 	DEBUG(("H.264 Decoder API v%d.%d\n", broadwayGetMajorVersion(),
 		   broadwayGetMinorVersion()));
 
-	broadwayInit(&video->decoder, 0, 0, 0, 0);
+	broadwayInit(&video->decoder, 0, 0, 0, 0, (void*) video);
 	video->byteStrmStart = broadwayCreateStream(&video->decoder, MAX_NAL_SIZE);
 
 	// Initialize SDL
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
-	Early_Resize_Function_VIDEO_SERVICE(video);
+	Early_Resize_Function_VIDEO_SERVICE(ctx, video);
 
 	// Create an SDL window and renderer
-	video->window = SDL_CreateWindow("YUV Rendering", SDL_WINDOWPOS_UNDEFINED,
-									 SDL_WINDOWPOS_UNDEFINED, width, height,
-									 SDL_WINDOW_OPENGL);
+	video->window = SDL_CreateWindow("YUV Rendering",
+		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, video->width,
+		video->height, SDL_WINDOW_OPENGL);
 
 	video->renderer = SDL_CreateRenderer(video->window, -1, 0);
 
@@ -108,17 +98,21 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
 	}
 
 	// Create an SDL texture
-	texture = SDL_CreateTexture(video->renderer, SDL_PIXELFORMAT_IYUV,
-								SDL_TEXTUREACCESS_STREAMING, width, height);
+	video->texture = SDL_CreateTexture(video->renderer, SDL_PIXELFORMAT_IYUV,
+		SDL_TEXTUREACCESS_STREAMING, video->width, video->height);
 	return true;
 }
 
-void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height) {
+void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
+	void *user_data) {
+
+	VIDEO_SERVICE *video = (VIDEO_SERVICE*) user_data;
+
 	// Lock the texture to get a pointer to the texture pixels
 	uint8_t *dst;
 	int dst_width;
-	int dst_height = height;
-	SDL_LockTexture(texture, NULL, (void **)&dst, &dst_width);
+	int dst_height = video->height;
+	SDL_LockTexture(video->texture, NULL, (void **)&dst, &dst_width);
 
 	// Copy the YUV bytes to the texture pixels pointer
 
@@ -136,30 +130,32 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height) {
 	unsigned char *dst_u = dst + dst_y_size;
 	unsigned char *dst_v = dst + dst_y_size + dst_u_size;
 
-	for (int i = 0; i < height; i++) {
+	for (int i = 0; i < video->height; i++) {
 		memcpy(dst_y, src_y, src_width);
 		dst_y += dst_width;
 		src_y += src_width;
 	}
 
-	for (int i = 0; i < height / 2; i++) {
+	for (int i = 0; i < video->height / 2; i++) {
 		memcpy(dst_u, src_u, src_width / 2);
 		dst_u += dst_width / 2;
 		src_u += src_width / 2;
 	}
 
-	for (int i = 0; i < height / 2; i++) {
+	for (int i = 0; i < video->height / 2; i++) {
 		memcpy(dst_v, src_v, src_width / 2);
 		dst_v += dst_width / 2;
 		src_v += src_width / 2;
 	}
 
 	// Unlock the texture
-	SDL_UnlockTexture(texture);
+	SDL_UnlockTexture(video->texture);
 }
 
-extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height) {
-	yuv_to_pixels(buffer, width, height);
+extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height,
+	void *user_data) {
+	
+	yuv_to_pixels(buffer, width, height, user_data);
 }
 
 extern void broadwayOnHeadersDecoded() { printf("header decoded\n"); }
@@ -241,7 +237,7 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 			// Clear the renderer
 			SDL_RenderClear(video->renderer);
 			// Copy the texture to the renderer
-			SDL_RenderCopy(video->renderer, texture, NULL, NULL);
+			SDL_RenderCopy(video->renderer, video->texture, NULL, NULL);
 			// Render the texture to the screen
 			SDL_RenderPresent(video->renderer);
 			// cout << "before" << endl;

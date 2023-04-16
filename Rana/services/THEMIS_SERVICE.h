@@ -12,6 +12,9 @@
 
 #define HERMES_STATUS_FPS 60
 
+#define THEMIS_SERVICE_CODE_NULL 0
+#define THEMIS_SERVICE_CODE_CHANGE_SCREEN_SIZE 1
+
 struct THEMIS_SERVICE {
 	KCONTEXT *ctx;
 	HERMES_CLIENT *client;
@@ -19,6 +22,7 @@ struct THEMIS_SERVICE {
 	FPS_LIMITER fps_limiter;
 	thread *main_loop;
 	volatile bool main_loop_running;
+	CLIENT *c;
 };
 
 bool Initialize_THEMIS_SERVICE(THEMIS_SERVICE*, KCONTEXT*);

@@ -14,6 +14,8 @@ bool Initialize_THEMIS_SERVICE(THEMIS_SERVICE *themis, KCONTEXT *ctx) {
 }
 
 void Main_Loop_THEMIS_SERVICE(THEMIS_SERVICE *themis) {
+	int code;
+
 	while (themis->main_loop_running) {
 		Start_FPS_LIMITER(&themis->fps_limiter);
 
@@ -24,6 +26,9 @@ void Main_Loop_THEMIS_SERVICE(THEMIS_SERVICE *themis) {
 			break;
 		}
 
+		code = THEMIS_SERVICE_CODE_NULL;
+		//Send_CLIENT(themis->c, (char*) &code, sizeof(int));
+
 		Stop_FPS_LIMITER(&themis->fps_limiter);
 	}
 }
@@ -31,9 +36,7 @@ void Main_Loop_THEMIS_SERVICE(THEMIS_SERVICE *themis) {
 bool Connect_THEMIS_SERVICE(THEMIS_SERVICE *themis, CLIENT *c,
 	HERMES_CLIENT *client) {
 
-	SCREEN_DIM screen_dim = SCREEN_DIM{
-		.bw = 1472, .sw = 1472, .h = 832
-	};
+	SCREEN_DIM screen_dim = Get_Screen_Dim_KCONTEXT(themis->ctx);
 
 	/*screen_dim.sw *= SCALE_RATIO;
 	screen_dim.bw *= SCALE_RATIO;
@@ -41,9 +44,11 @@ bool Connect_THEMIS_SERVICE(THEMIS_SERVICE *themis, CLIENT *c,
 
 	themis->themis_status = HERMES_STATUS_NORMAL;
 	themis->client = client;
+	themis->c = c;
 
-	ASSERT_E_R(c != NULL, "Client is NULL", themis->ctx);
-	ASSERT_E_R(Send_CLIENT(c, (char*)&screen_dim, sizeof(SCREEN_DIM)),
+	ASSERT_E_R(themis->c != NULL, "Client is NULL", themis->ctx);
+	ASSERT_E_R(Send_CLIENT(themis->c, (char*)&screen_dim,
+		sizeof(SCREEN_DIM)),
 		"Couldn't send screen_dim", themis->ctx);
 
 	themis->main_loop_running = true;

@@ -26,8 +26,6 @@
 #define MAXIMUM_WIDTH 1920
 #define MAXIMUM_HEIGHT 1080
 
-extern SDL_Texture *texture;
-
 struct VIDEO_SERVICE {
 	KCONTEXT *ctx;
 
@@ -38,6 +36,7 @@ struct VIDEO_SERVICE {
 
 	SDL_Window *window;
 	SDL_Renderer *renderer;
+	SDL_Texture *texture;
 
 	Decoder decoder;
 	u8 *byteStrmStart;
