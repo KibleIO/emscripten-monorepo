@@ -12,6 +12,7 @@ demo/client/index.html
 
 .vscode/
 obj/
+opus/
 
 # Logs
 logs

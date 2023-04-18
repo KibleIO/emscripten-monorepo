@@ -49,8 +49,8 @@ emcc_args = [
     # '-s', '''EXPORTED_FUNCTIONS=["_broadwayGetMajorVersion", "_broadwayGetMinorVersion", "_broadwayInit", "_broadwayExit", "_broadwayCreateStream", "_broadwayPlayStream", "_broadwayOnHeadersDecoded", "_broadwayOnPictureDecoded"]''',
     # '--closure', '1',
     '--js-library', 'Broadway-H.264-decoder/Decoder/library.js',
-    '--preload-file', 'test2.h264@test2.h264',
-    '--preload-file', 'test.opus@test.opus',
+    # '--preload-file', 'test2.h264@test2.h264',
+    # '--preload-file', 'test.opus@test.opus',
     # '--pre-js', 'Broadway-H.264-decoder/Decoder/download.js',
     # '-s', 'FULL_ES3=1',
     # '-s', 'MODULARIZE=1'
@@ -61,10 +61,10 @@ emcc_args = [
     '-I', 'Rana_Core_Utils/Utilities',
     '-I', 'Rana_Core_Utils/Utilities/WS',
     '-I', 'Rana_Core_Utils/Hermes',
-    '-I', '/Users/kord/Documents/source.nosync/opus',
-    '-I', '/Users/kord/Documents/source.nosync/opus/include',
+    '-I', 'opus',
+    '-I', 'opus/include',
     "-l", "websocket.js",
-    "-L", "/Users/kord/Documents/source.nosync/opus/build/.libs",
+    "-L", "opus/build/.libs",
     "-l", "opus",
     # "-sPROXY_TO_PTHREAD",
     "-s", "USE_PTHREADS",
@@ -77,7 +77,7 @@ if not os.path.exists(OBJ_DIR):
 
 
 exclude_dirs_C = set(
-    ["arm_neon_asm", "arm_neon_asm_gcc", "arm11_asm", "omxdl"])
+    ["arm_neon_asm", "arm_neon_asm_gcc", "arm11_asm", "omxdl", "opus"])
 exclude_files_C = set(["main.c", "Broadway.c", "h264bsd_sei.c",
                       "TestBenchMultipleInstance.c", "EvaluationTestBench.c", "DecTestBench.c"])
 exclude_dirs_CPP = set(["Broadway-H.264-decoder"])
