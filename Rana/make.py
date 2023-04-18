@@ -50,7 +50,7 @@ emcc_args = [
     # '--closure', '1',
     '--js-library', 'Broadway-H.264-decoder/Decoder/library.js',
     '--preload-file', 'test2.h264@test2.h264',
-    '--preload-file', 'test-2.opus@test-2.opus',
+    '--preload-file', 'test.opus@test.opus',
     # '--pre-js', 'Broadway-H.264-decoder/Decoder/download.js',
     # '-s', 'FULL_ES3=1',
     # '-s', 'MODULARIZE=1'

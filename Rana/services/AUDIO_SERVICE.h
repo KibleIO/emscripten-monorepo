@@ -2,9 +2,7 @@
 #define AUDIO_SERVICE_H_
 
 #include <SDL2/SDL.h>
-
 #include <thread>
-
 #include "../Rana_Core_Utils/Hermes/CLIENT.h"
 #include "../Rana_Core_Utils/Utilities/ASSERT.h"
 #include "../Rana_Core_Utils/Utilities/KCONTEXT.h"
@@ -14,7 +12,11 @@
 #define MAX_NAL_SIZE 2000
 #define SAMPLE_RATE 48000  // Sample rate in Hz
 #define CHANNELS 2	// Number of audio channels (1 for mono, 2 for stereo)
-#define SAMPLES_PER_FRAME (FRAME_SIZE_MS * SAMPLE_RATE / 1000)  // Number of samples per audio frame
+#define FRAME_SIZE (FRAME_SIZE_MS * SAMPLE_RATE / 1000)  // Number of samples per audio frame
+#define MAX_FRAME_SIZE (6*960)
+#define MAX_PACKET_SIZE ((3 * 1276) + 512)
+#define BITRATE 109000
+#define OPUS_HEAD_SIZE 385
 
 struct AUDIO_SERVICE {
 	KCONTEXT *ctx;
@@ -22,7 +24,7 @@ struct AUDIO_SERVICE {
 	thread *main_loop;
 	volatile bool main_loop_running;
 	char nal_buffer[MAX_NAL_SIZE];
-	opus_int16 pcm[SAMPLES_PER_FRAME * CHANNELS * sizeof(opus_int16)];
+	opus_int16 pcm[FRAME_SIZE * CHANNELS * sizeof(opus_int16)];
 	OpusDecoder *decoder;
 	SDL_AudioDeviceID audioDevice;
 };
