@@ -15,7 +15,6 @@ bool Initialize_AUDIO_SERVICE(AUDIO_SERVICE *audio, KCONTEXT *ctx) {
 				opus_strerror(error));
 		return false;
 	}
-	Sleep_Milli(5000);
 	// Set the desired audio format
 	SDL_AudioSpec desiredSpec, obtainedSpec;
 	SDL_zero(obtainedSpec);
@@ -23,102 +22,40 @@ bool Initialize_AUDIO_SERVICE(AUDIO_SERVICE *audio, KCONTEXT *ctx) {
 	desiredSpec.freq = SAMPLE_RATE;
 	desiredSpec.format = AUDIO_S16SYS;
 	desiredSpec.channels = CHANNELS;
-	// desiredSpec.samples = FRAME_SIZE;
-	desiredSpec.callback = NULL;  // Set the audio callback function
+	desiredSpec.samples = FRAME_SIZE;
+	desiredSpec.callback = NULL;	 // Set the audio callback function
+	desiredSpec.userdata = NULL;
 
 	// Open the audio device
-	audio->audioDevice =
-		SDL_OpenAudioDevice(NULL, 0, &desiredSpec, &obtainedSpec, 0);
-	if (audio->audioDevice == 0) {
+	if ((audio->audioDevice = SDL_OpenAudioDevice(
+			 NULL, 0, &desiredSpec, &obtainedSpec, 0)) == 0) {
 		printf("SDL_OpenAudioDevice() failed: %s\n", SDL_GetError());
-		return 1;
+		return false;
 	}
 	return true;
 }
 
-int op_read(FILE *file, unsigned char *buffer, int max_length) {
-	int packet_size = 0;
-	if (fread(&packet_size, sizeof(packet_size), 1, file) != 1) {
-		return 0;
-	}
-	cout << packet_size << endl;
-
-	if (packet_size > max_length) {
-		return -1;
-	}
-	if (fread(buffer, 1, packet_size, file) != packet_size) {
-		return -1;
-	}
-	return packet_size;
-}
-
 void Main_TCP_Loop_AUDIO_SERVICE(AUDIO_SERVICE *audio) {
 	int size;
-	FILE *infile = fopen("test.opus", "rb");
-	if (infile == NULL) {
-		printf("Error opening input file\n");
-		return;
-	}
+	while (audio->main_loop_running) {
+		if (Receive_CLIENT(audio->c, (char *)&size, sizeof(int)) &&
+			Receive_CLIENT(audio->c, audio->nal_buffer, size)) {
+			if (size == 11) {
+				continue;
+			}
+			int num_samples = opus_decode(
+				audio->decoder, (uint8_t *)audio->nal_buffer + 8,
+				((int *)audio->nal_buffer)[1], audio->pcm, FRAME_SIZE, 0);
+			if (num_samples < 0) {
+				fprintf(stderr, "opus_decode error: %s\n",
+						opus_strerror(num_samples));
+				continue;
+			}
 
-	fseek(infile, OPUS_HEAD_SIZE, SEEK_SET);
-	// unsigned char encoded[FRAME_SIZE * CHANNELS * sizeof(opus_int16)];
-	unsigned char encoded[MAX_FRAME_SIZE];
-	opus_int32 nbytes;
-	opus_int16 pcm[FRAME_SIZE * CHANNELS];
-	while (!feof(infile)) {
-		int packet_size = fgetc(infile);
-		if (packet_size == EOF) {
-			cout << "EOF" << endl;
-			break;	// End of file
-		}
-		cout << packet_size << endl;
-		if (fread(encoded, 1, packet_size, infile) != packet_size) {
-			printf("Error: could not read Opus packet\n");
-			break;
-		}
-		// nbytes = op_read(infile, encoded, SAMPLE_RATE);
-		// nbytes = fread(encoded, sizeof(unsigned char),
-		// 			   FRAME_SIZE * CHANNELS * sizeof(opus_int16), infile);
-		// if (nbytes < 0) {
-		// 	fprintf(stderr, "fread error: %s\n");
-		// 	break;
-		// }
-		int frame_size =
-			opus_decode(audio->decoder, encoded, packet_size, pcm, FRAME_SIZE, 0);
-		if (frame_size < 0) {
-			fprintf(stderr, "opus_decode error: %s\n",
-					opus_strerror(frame_size));
-			break;
-		}
-		// cout << "bytes: " << nbytes << endl;
-		cout << "frame size: " << frame_size << endl;
-		int error = SDL_QueueAudio(audio->audioDevice, pcm,
-								   frame_size * sizeof(opus_int16));
-		if (error < 0) {
-			cout << "hi: " << SDL_GetError() << endl;
+			SDL_QueueAudio(audio->audioDevice, audio->pcm,
+						   num_samples * CHANNELS * sizeof(opus_int16));
 		}
 	}
-	while (SDL_GetQueuedAudioSize(audio->audioDevice) > 0) {
-		cout << "spin" << endl;
-		SDL_Delay(100);
-	}
-	cout << "end" << endl;
-	// while (audio->main_loop_running) {
-	// 	if (Receive_CLIENT(audio->c, (char *)&size, sizeof(int)) &&
-	// 		Receive_CLIENT(audio->c, audio->nal_buffer, size)) {
-	// 		cout << size << endl;
-	// 		int num_samples = opus_decode(
-	// 			audio->decoder, (const unsigned char *)audio->nal_buffer, size,
-	// 			audio->pcm, MAX_FRAME_SIZE, 0);
-	// 		if (num_samples < 0) {
-	// 			fprintf(stderr, "opus_decode error: %s\n",
-	// 					opus_strerror(num_samples));
-	// 			continue;
-	// 		}
-	// 		SDL_QueueAudio(audio->audioDevice, audio->pcm,
-	// 					   num_samples * CHANNELS * sizeof(opus_int16));
-	// 	}
-	// }
 }
 
 bool Connect_AUDIO_SERVICE(AUDIO_SERVICE *audio, CLIENT *c) {
