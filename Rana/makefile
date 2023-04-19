@@ -9,7 +9,8 @@ OBJECTS = $(SOURCES:.cpp=.o)
 CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=2048MB -sUSE_WEBGL2=1 \
 -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -sNO_EXIT_RUNTIME=1 \
 -sALIASING_FUNCTION_POINTERS=1 -sDOUBLE_MODE=0 --memory-init-file 1 \
-Broadway-H.264-decoder/libbroadway.a -sSTACK_SIZE=1024MB
+Broadway-H.264-decoder/libbroadway.a opus/build/.libs/libopus.a \
+-sSTACK_SIZE=1024MB
 
 #use for debugging
 #CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=2048MB -sUSE_WEBGL2=1 \
