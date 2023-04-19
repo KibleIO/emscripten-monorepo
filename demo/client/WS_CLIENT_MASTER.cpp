@@ -1,5 +1,11 @@
 #include "WS_CLIENT_MASTER.h"
 
+int64_t getTime1() {
+	timeval start;
+	gettimeofday(&start, NULL);
+	return ((start.tv_sec) * 1000 + start.tv_usec / 1000.0) + 0.5;
+}
+
 EM_BOOL On_Open_WS_CLIENT_MASTER(int eventType,
 	const EmscriptenWebSocketOpenEvent *websocketEvent, void *userData) {
 
@@ -32,6 +38,8 @@ EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 	WS_CLIENT_MASTER *client = (WS_CLIENT_MASTER*) userData;
 	WEBSOCKET_ELEMENT *temp = NULL;
 	uint32_t time_out = 0;
+
+	//cout << getTime1() - *((int64_t*)&websocketEvent->data[1]) << endl;
 
 	int len = websocketEvent->numBytes;
 

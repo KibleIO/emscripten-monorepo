@@ -36,32 +36,20 @@ int main() {
 		return 0;
 	}
 
-	cout << "step 3" << endl;
+	//while (true) {
+		int64_t time, time2;
 
-	WS_CLIENT client2;
-	if (!Initialize_WS_CLIENT(&client2, &client_master, 0)) {
-		cout << "couldn't connect4" << endl;
-		return 0;
-	}
+		if (!Receive_WS_CLIENT(&client, (char*) &time, sizeof(int64_t))) {
+			cout << "coudn't receive6" << endl;
+		}
 
-	cout << "step 4" << endl;
+		time2 = getTime();
 
-	if (!Connect_WS_CLIENT(&client2)) {
-		cout << "couldn't connect5" << endl;
-		return 0;
-	}
+		if (!Send_WS_CLIENT(&client, (char*) &time2, sizeof(int64_t))) {
+			cout << "coudn't send" << endl;
+		}
 
-	int64_t time, time2;
-
-	if (!Receive_WS_CLIENT(&client, (char*) &time, sizeof(int64_t))) {
-		cout << "coudn't receive6" << endl;
-	}
-
-	time2 = getTime();
-
-	if (!Send_WS_CLIENT(&client2, (char*) &time2, sizeof(int64_t))) {
-		cout << "coudn't send" << endl;
-	}
-
-	cout << (time2 - time) << endl;
+		cout << (time2 - time) << endl;
+	//}
+	
 }

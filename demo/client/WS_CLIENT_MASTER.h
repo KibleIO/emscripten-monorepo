@@ -5,6 +5,8 @@
 #include <emscripten/websocket.h>
 #include "utils.h"
 #include "CONCURRENT_QUEUE.h"
+#include <sys/time.h>
+#include <unistd.h>
 
 #define WEB_SOCKET_POOL_SIZE 80
 #define MAX_WEBSOCKET_PACKET_SIZE 100000

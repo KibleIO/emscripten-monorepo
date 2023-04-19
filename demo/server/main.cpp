@@ -29,28 +29,21 @@ int main() {
 		return 0;
 	}
 
-	WS_SERVER server2;
-	if (!Initialize_WS_SERVER(&server2, &master_server, 0)) {
-		cout << "error4" << endl;
-		return 0;
-	}
+	//while (true) {
+		int64_t time = getTime();
 
-	if (!Accept_WS_SERVER(&server2)) {
-		cout << "error5" << endl;
-		return 0;
-	}
+		if (!Send_WS_SERVER(&server1, (char*) &time, sizeof(int64_t))) {
+			cout << "error6" << endl;
+		}
 
-	int64_t time = getTime();
+		if (!Receive_WS_SERVER(&server1, (char*) &time, sizeof(int64_t))) {
+			cout << "error7" << endl;
+		}
 
-	if (!Send_WS_SERVER(&server1, (char*) &time, sizeof(int64_t))) {
-		cout << "error6" << endl;
-	}
+		cout << (getTime() - time) << endl;
+	//}
 
-	if (!Receive_WS_SERVER(&server2, (char*) &time, sizeof(int64_t))) {
-		cout << "error7" << endl;
-	}
-
-	cout << (getTime() - time) << endl;
+	
 
 	return 0;
 }
