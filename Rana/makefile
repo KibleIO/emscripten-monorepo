@@ -8,8 +8,6 @@ CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=1024MB -sUSE_WEBGL2=1 \
 -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -sNO_EXIT_RUNTIME=1 \
 -sALIASING_FUNCTION_POINTERS=1 -sDOUBLE_MODE=0 --memory-init-file 1 Broadway-H.264-decoder/libbroadway.a
 
-CC_BUILD_FLAGS = -IBroadway-H.264-decoder/Decoder/src -IBroadway-H.264-decoder/Decoder/inc
-
 default: $(OBJECTS)
 	$(CC) -r $(OBJECTS) -o $(BC)
 	$(CC) $(BC) -o $(EXEC) $(CXXFLAGS)

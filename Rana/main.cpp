@@ -1,23 +1,8 @@
-#include <SDL2/SDL.h>
-#include <emscripten.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <iostream>
-
-#include "Broadway-H.264-decoder/Decoder/src/Decoder.h"
-#include "LIMITS.h"
 #include "RANA_EXT.h"
-#include "Rana_Core_Utils/Hermes/CLIENT.h"
-#include "Rana_Core_Utils/Hermes/HERMES_CLIENT.h"
 #include "Rana_Core_Utils/Utilities/ASSERT.h"
-#include "Rana_Core_Utils/Utilities/FPS_LIMITER.h"
 
 int main() {
 	KCONTEXT ctx;
-
-	FILE *finput;
 	RANA_EXT rana_ext;
 
 	LOG_INFO_CTX(&ctx) {
