@@ -19,4 +19,4 @@ $(EXEC): $(OBJECTS)
 # To remove generated files
 clean:
 	rm -rf obj/
-	rm -rf avc.bc avc.data avc.js avc.wasm
+	rm -rf avc.bc avc.data avc.js avc.wasm avc.worker.js

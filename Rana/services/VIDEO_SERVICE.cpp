@@ -25,7 +25,7 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
 	video->byteStrmStart = broadwayCreateStream(&video->decoder, MAX_NAL_SIZE);
 
 	// Initialize SDL
-	SDL_Init(SDL_INIT_VIDEO);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
 	// Create an SDL window and renderer
 	video->window = SDL_CreateWindow("YUV Rendering", SDL_WINDOWPOS_UNDEFINED,

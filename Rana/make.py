@@ -44,21 +44,31 @@ emcc_args = [
     '-s', 'AGGRESSIVE_VARIABLE_ELIMINATION=1',
     '-s', 'ALIASING_FUNCTION_POINTERS=1',
     '-s', 'DISABLE_EXCEPTION_CATCHING=1',
-    # '-s', 'USE_CLOSURE_COMPILER=1',
+    '-s', 'USE_CLOSURE_COMPILER=1',
     # '-s', 'FORCE_ALIGNED_MEMORY=1', #why doesnt this work?
     # '-s', '''EXPORTED_FUNCTIONS=["_broadwayGetMajorVersion", "_broadwayGetMinorVersion", "_broadwayInit", "_broadwayExit", "_broadwayCreateStream", "_broadwayPlayStream", "_broadwayOnHeadersDecoded", "_broadwayOnPictureDecoded"]''',
     # '--closure', '1',
     '--js-library', 'Broadway-H.264-decoder/Decoder/library.js',
-    '--preload-file', 'test2.h264@test2.h264',
+    # '--preload-file', 'test2.h264@test2.h264',
+    # '--preload-file', 'test.opus@test.opus',
     # '--pre-js', 'Broadway-H.264-decoder/Decoder/download.js',
     # '-s', 'FULL_ES3=1',
     # '-s', 'MODULARIZE=1'
     '-s', 'USE_SDL=2',
     '-s', 'USE_WEBGL2=1',
-    "-lwebsocket.js",
+    '-I', 'Broadway-H.264-decoder/Decoder/src',
+    '-I', 'Broadway-H.264-decoder/Decoder/inc',
+    '-I', 'Rana_Core_Utils/Utilities',
+    '-I', 'Rana_Core_Utils/Utilities/WS',
+    '-I', 'Rana_Core_Utils/Hermes',
+    '-I', 'opus',
+    '-I', 'opus/include',
+    "-l", "websocket.js",
+    "-L", "opus/build/.libs",
+    "-l", "opus",
     # "-sPROXY_TO_PTHREAD",
-    "-sUSE_PTHREADS",
-    "-sASYNCIFY",
+    "-s", "USE_PTHREADS",
+    "-s", "ASYNCIFY",
 ]
 
 OBJ_DIR = "obj"
@@ -67,7 +77,7 @@ if not os.path.exists(OBJ_DIR):
 
 
 exclude_dirs_C = set(
-    ["arm_neon_asm", "arm_neon_asm_gcc", "arm11_asm", "omxdl"])
+    ["arm_neon_asm", "arm_neon_asm_gcc", "arm11_asm", "omxdl", "opus"])
 exclude_files_C = set(["main.c", "Broadway.c", "h264bsd_sei.c",
                       "TestBenchMultipleInstance.c", "EvaluationTestBench.c", "DecTestBench.c"])
 exclude_dirs_CPP = set(["Broadway-H.264-decoder"])
@@ -82,16 +92,12 @@ CPP_FILES = [f for f in glob("**/*.cpp", recursive=True)
 for file in C_FILES:
     target = file.replace('.c', '.o')
     print('emcc %s -> %s' % (file, target))
-    subprocess.run(['emcc'] + emcc_args + ['-IBroadway-H.264-decoder/Decoder/src',
-                   '-IBroadway-H.264-decoder/Decoder/inc', '-IRana_Core_Utils/Utilities',
-                                           '-IRana_Core_Utils/Utilities/WS', '-IRana_Core_Utils/Hermes'] + ['-c', file, '-o', os.path.join('obj', os.path.basename(target))])
+    subprocess.run(['emcc'] + emcc_args + ['-c', file, '-o', os.path.join('obj', os.path.basename(target))])
 
 for file in CPP_FILES:
     target = file.replace('.cpp', '.o')
     print('emcc %s -> %s' % (file, target))
-    subprocess.run(['emcc'] + emcc_args + ['-IBroadway-H.264-decoder/Decoder/src',
-                   '-IBroadway-H.264-decoder/Decoder/inc', '-IRana_Core_Utils/Utilities',
-                                           '-IRana_Core_Utils/Utilities/WS', '-IRana_Core_Utils/Hermes'] + ['-c', file, '-o', os.path.join('obj', os.path.basename(target))])
+    subprocess.run(['emcc'] + emcc_args + ['-c', file, '-o', os.path.join('obj', os.path.basename(target))])
 
 object_files_c = [os.path.join('obj', os.path.basename(
     x.replace('.c', '.o'))) for x in C_FILES]
@@ -103,5 +109,5 @@ print('link -> %s' % 'avc.bc')
 subprocess.run(['emcc', '-r'] + object_files + ['-o', 'avc.bc'])
 
 print('emcc %s -> %s' % ('avc.bc', 'avc.js'))
-subprocess.run(['emcc', 'avc.bc', '-o', 'avc.js'] + emcc_args)
+subprocess.run(['emcc', 'avc.bc'] + emcc_args + ['-o', 'avc.js'])
 # subprocess.run(['emcc', 'avc.bc', '-o', 'index.html'] + emcc_args)
