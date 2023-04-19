@@ -1,7 +1,5 @@
 #include "VIDEO_SERVICE.h"
 
-#include "../Utilities/TIMER.h"
-
 SDL_Texture *texture = NULL;
 int width = 800;
 int height = 600;

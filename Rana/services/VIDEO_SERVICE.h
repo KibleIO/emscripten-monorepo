@@ -12,6 +12,7 @@
 #include "../Rana_Core_Utils/Utilities/KCONTEXT.h"
 #include "../Rana_Core_Utils/Utilities/MOUSE.h"
 #include "../Rana_Core_Utils/Utilities/KEYBOARD.h"
+#include "../Rana_Core_Utils/Utilities/TIMER.h"
 #include "../Broadway-H.264-decoder/Decoder/src/Decoder.h"
 #include "MOUSE_SERVICE.h"
 #include "KEYBOARD_SERVICE.h"
