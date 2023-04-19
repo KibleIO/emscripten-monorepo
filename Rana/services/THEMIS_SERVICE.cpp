@@ -32,7 +32,7 @@ bool Connect_THEMIS_SERVICE(THEMIS_SERVICE *themis, CLIENT *c,
 	HERMES_CLIENT *client) {
 
 	SCREEN_DIM screen_dim = SCREEN_DIM{
-		.bw = 800, .sw = 800, .h = 600
+		.bw = 1472, .sw = 1472, .h = 832
 	};
 
 	/*screen_dim.sw *= SCALE_RATIO;

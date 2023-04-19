@@ -18,7 +18,13 @@
 #include "KEYBOARD_SERVICE.h"
 
 // god have mercy on us
-#define MAX_NAL_SIZE 40000
+#define MAX_NAL_SIZE 100000
+
+#define MINIMUM_WIDTH 480
+#define MINIMUM_HEIGHT 480
+
+#define MAXIMUM_WIDTH 1920
+#define MAXIMUM_HEIGHT 1080
 
 extern SDL_Texture *texture;
 
@@ -41,6 +47,11 @@ struct VIDEO_SERVICE {
 	int counter = 0;
 	int mouse_count;
 	int keyboard_count;
+
+	int width, height;
+
+	float x_scale;
+	float y_scale;
 
 	MOUSE_SERVICE *mouse_service;
 	KEYBOARD_SERVICE *keyboard_service;
