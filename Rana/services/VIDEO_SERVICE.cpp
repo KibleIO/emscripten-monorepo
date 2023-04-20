@@ -20,75 +20,64 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
 	return 0;
 }
 
-void Early_Resize_Function_VIDEO_SERVICE(VIDEO_SERVICE *video) {
-	get_screen_width_height(&video->width, &video->height);
+void Report_Resize_Function_VIDEO_SERVICE(VIDEO_SERVICE *video) {
+	int width;
+	int height;
+
+	get_screen_width_height(&width, &height);
 
 	bool changed = false;
 
-	if (video->width < MINIMUM_WIDTH) {
-		video->width = MINIMUM_WIDTH;
+	if (width < MINIMUM_WIDTH) {
+		width = MINIMUM_WIDTH;
 		changed = true;
 	}
 
-	if (video->height < MINIMUM_HEIGHT) {
-		video->height = MINIMUM_HEIGHT;
+	if (height < MINIMUM_HEIGHT) {
+		height = MINIMUM_HEIGHT;
 		changed = true;
 	}
 
-	if (video->width > MAXIMUM_WIDTH) {
-		video->width = MAXIMUM_WIDTH;
+	if (width > MAXIMUM_WIDTH) {
+		width = MAXIMUM_WIDTH;
 		changed = true;
 	}
 
-	if (video->height > MAXIMUM_HEIGHT) {
-		video->height = MAXIMUM_HEIGHT;
+	if (height > MAXIMUM_HEIGHT) {
+		height = MAXIMUM_HEIGHT;
 		changed = true;
 	}
 
-	if (video->width % 32 != 0) {
-		video->width = (video->width / 32) * 32;
+	if (width % 32 != 0) {
+		width = (width / 32) * 32;
 		changed = true;
 	}
 
-	if (video->height % 32 != 0) {
-		video->height = (video->height / 32) * 32;
+	if (height % 32 != 0) {
+		height = (height / 32) * 32;
 		changed = true;
 	}
 
-	if (changed) {
-		//video->x_scale = float(video->width) / float(temp_width);
-		//video->y_scale = float(video->height) / float(temp_height);
-
+	//if (changed) {
 		Set_Screen_Dim_KCONTEXT(video->ctx, (SCREEN_DIM) {
-		video->width,
-		video->width,
-		video->height});
+		width,
+		width,
+		height});
+	//}
+}
 
-		SDL_SetWindowSize(video->window, video->width, video->height);
+void Actually_Resize_Window_VIDEO_SERVICE(VIDEO_SERVICE *video, int width, int height) {
+	video->width = width;
+	video->height = height;
 
-		if (video->texture != NULL) {
-			SDL_DestroyTexture(video->texture);
-		}
+	SDL_SetWindowSize(video->window, video->width, video->height);
 
-		video->texture = SDL_CreateTexture(video->renderer, SDL_PIXELFORMAT_IYUV,
-			SDL_TEXTUREACCESS_STREAMING, video->width, video->height);
-
-		/*
-		SDL_DestroyTexture(sdl->screen_texture);
-
-		SDL_RenderSetLogicalSize(sdl->renderer, temp_width, temp_height);
-
-		SDL_RenderPresent(sdl->renderer);
-		SDL_RenderClear(sdl->renderer);
-
-		sdl->screen_texture =
-			SDL_CreateTexture(sdl->renderer, SDL_PIXELFORMAT_ARGB8888,
-			SDL_TEXTUREACCESS_STREAMING, sdl->width, sdl->height);
-		SDL_SetTextureBlendMode(sdl->screen_texture, SDL_BLENDMODE_BLEND);
-
-		Resize_ULTRALIGHT_WRAPPER(&sdl->ultralight, sdl->width, sdl->height);
-		*/
+	if (video->texture != NULL) {
+		SDL_DestroyTexture(video->texture);
 	}
+
+	video->texture = SDL_CreateTexture(video->renderer, SDL_PIXELFORMAT_IYUV,
+		SDL_TEXTUREACCESS_STREAMING, video->width, video->height);
 }
 
 bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
@@ -125,7 +114,9 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
 		printf("Failed to create renderer: %s\n", SDL_GetError());
 	}
 
-	Early_Resize_Function_VIDEO_SERVICE(video);
+	Report_Resize_Function_VIDEO_SERVICE(video);
+	video->width = 800;
+	video->height = 600;
 
 	emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW,
 		(void*) video, 0, Emscripten_HandleResize);
@@ -137,6 +128,25 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 	void *user_data) {
 
 	VIDEO_SERVICE *video = (VIDEO_SERVICE*) user_data;
+	
+	if (video->decoder.decInfo.croppingFlag) {
+		if (video->decoder.decInfo.cropParams.cropOutWidth != video->width ||
+			video->decoder.decInfo.cropParams.cropOutHeight != video->height) {
+
+			Actually_Resize_Window_VIDEO_SERVICE(video,
+				video->decoder.decInfo.cropParams.cropOutWidth,
+				video->decoder.decInfo.cropParams.cropOutHeight);
+		}
+	} else {
+		if (video->decoder.decInfo.picWidth != video->width ||
+			video->decoder.decInfo.picHeight != video->height) {
+
+			Actually_Resize_Window_VIDEO_SERVICE(video,
+				video->decoder.decInfo.picWidth,
+				video->decoder.decInfo.picHeight);
+		}
+	}
+
 
 	// Lock the texture to get a pointer to the texture pixels
 	uint8_t *dst;
@@ -219,7 +229,7 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 				m_event.event_index = video->mouse_count++;
 				Send_CLIENT(video->mouse_service->c, (char *)&m_event,
 							sizeof(MOUSE_EVENT_T));
-
+				//cout << "mouse motion event " << int(video->mouse_service->c->ws_client.client_id) << endl;
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				m_event.x = ((float)event.button.x)/* * video->x_scale*/;
@@ -259,7 +269,7 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 				break;
 			case SDL_WINDOWEVENT:
 				if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-					Early_Resize_Function_VIDEO_SERVICE(video);
+					Report_Resize_Function_VIDEO_SERVICE(video);
 				}
 				break;
 			}

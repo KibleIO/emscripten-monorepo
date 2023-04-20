@@ -5,7 +5,7 @@ bool Initialize_WS_CLIENT(WS_CLIENT *client, KCONTEXT *ctx, WS_CLIENT_MASTER *ma
 	client->ctx = ctx;
 	Set_Name_WS_CLIENT(client, "unknown");
 
-	if (!Set_Recv_Timeout_WS_CLIENT(client, 1, 0)) {
+	if (!Set_Recv_Timeout_WS_CLIENT(client, 5, 0)) {
 		return false;
 	}
 

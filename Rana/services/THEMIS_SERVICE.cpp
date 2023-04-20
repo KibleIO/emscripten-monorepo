@@ -27,12 +27,12 @@ void Main_Loop_THEMIS_SERVICE(THEMIS_SERVICE *themis) {
 		}
 
 		if (themis->ctx->screen_dim_changed) {
-			themis->ctx->screen_dim_changed = false;
 			SCREEN_DIM screen_dim = Get_Screen_Dim_KCONTEXT(themis->ctx);
 
 			code = THEMIS_SERVICE_CODE_CHANGE_SCREEN_SIZE;
 			Send_CLIENT(themis->c, (char*) &code, sizeof(int));
 			Send_CLIENT(themis->c, (char*) &screen_dim, sizeof(SCREEN_DIM));
+			themis->ctx->screen_dim_changed = false;
 		} else {
 			code = THEMIS_SERVICE_CODE_NULL;
 			Send_CLIENT(themis->c, (char*) &code, sizeof(int));
