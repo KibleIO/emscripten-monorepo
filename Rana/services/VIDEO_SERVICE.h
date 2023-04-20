@@ -18,7 +18,7 @@
 #include "KEYBOARD_SERVICE.h"
 
 // god have mercy on us
-#define MAX_NAL_SIZE 100000
+#define MAX_NAL_SIZE 200000
 
 #define MINIMUM_WIDTH 480
 #define MINIMUM_HEIGHT 480

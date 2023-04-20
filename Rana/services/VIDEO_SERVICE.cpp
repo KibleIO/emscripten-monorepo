@@ -193,6 +193,14 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 
 	// Unlock the texture
 	SDL_UnlockTexture(video->texture);
+
+	// Clear the renderer
+	SDL_RenderClear(video->renderer);
+	// Copy the texture to the renderer
+	SDL_RenderCopy(video->renderer, video->texture, NULL, NULL);
+	// Render the texture to the screen
+	SDL_RenderPresent(video->renderer);
+	// cout << "before" << endl;
 }
 
 extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height,
@@ -204,6 +212,24 @@ extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height,
 extern void broadwayOnHeadersDecoded() { printf("header decoded\n"); }
 
 TIMER t;
+
+void Decode_Buffer_VIDEO_SERVICE(VIDEO_SERVICE *video, char *buffer, int size) {
+	video->decoder.streamStop = (u8 *)buffer + size;
+	video->decoder.decInput.pStream = (u8 *)buffer;
+	video->decoder.decInput.dataLen = size;
+
+	
+	//==============
+
+	//============== < 5ms
+	u32 i = 0;
+	do {
+		u8 *start = video->decoder.decInput.pStream;
+		u32 ret = broadwayDecode(&video->decoder);
+		//printf("Decoded Unit #%d, Size: %d, Result: %d\n", i++,
+		//	   (video->decoder.decInput.pStream - start), ret);
+	} while (video->decoder.decInput.dataLen > 0);
+}
 
 void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 	//cout << "time: " << Stop_TIMER(&t) << endl;
@@ -281,27 +307,7 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 		if (Receive_CLIENT(video->c, (char *)&size, sizeof(int)) &&
 			Receive_CLIENT(video->c, video->nal_buffer, size)) {
 			//============== < 5ms
-			video->decoder.streamStop = (u8 *)video->nal_buffer + size;
-			video->decoder.decInput.pStream = (u8 *)video->nal_buffer;
-			video->decoder.decInput.dataLen = size;
-
-			// Clear the renderer
-			SDL_RenderClear(video->renderer);
-			// Copy the texture to the renderer
-			SDL_RenderCopy(video->renderer, video->texture, NULL, NULL);
-			// Render the texture to the screen
-			SDL_RenderPresent(video->renderer);
-			// cout << "before" << endl;
-			//==============
-
-			//============== < 5ms
-			u32 i = 0;
-			do {
-				u8 *start = video->decoder.decInput.pStream;
-				u32 ret = broadwayDecode(&video->decoder);
-				// printf("Decoded Unit #%d, Size: %d, Result: %d\n", i++,
-				//	   (video->decoder.decInput.pStream - start), ret);
-			} while (video->decoder.decInput.dataLen > 0);
+			Decode_Buffer_VIDEO_SERVICE(video, video->nal_buffer, size);
 			//==============
 		}
 		//==============

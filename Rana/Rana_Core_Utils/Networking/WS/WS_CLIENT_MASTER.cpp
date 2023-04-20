@@ -49,6 +49,7 @@ EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 
 		//a reader is getting lazy... drop this packet
 		//log_err("a reader got lazy, dropping this packet.");
+		cout << "dropping packet" << endl;
 		return EM_FALSE;
 	}
 
@@ -64,11 +65,15 @@ EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 
 	client->pool->pop(temp);
 
+	/*
 	if (len > MAX_WEBSOCKET_PACKET_SIZE) {
 		cout << "truncate packet " << len << endl;
 		//log_err("received large packet. truncated.");
 		len = MAX_WEBSOCKET_PACKET_SIZE;
 	}
+	*/
+
+	temp->bytes = new uint8_t[len - 1];
 
 	copy((uint8_t*)websocketEvent->data + 1,
 		((uint8_t*)websocketEvent->data + 1) + (len - 1), temp->bytes);
@@ -98,7 +103,7 @@ bool Initialize_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client, KCONTEXT *ctx,
 	for (int i = 0; i < WEB_SOCKET_POOL_SIZE; i++) {
 		temp		= new WEBSOCKET_ELEMENT;
 		temp->size	= -1;
-		temp->bytes	= new uint8_t[MAX_WEBSOCKET_PACKET_SIZE];
+		//temp->bytes	= new uint8_t[MAX_WEBSOCKET_PACKET_SIZE];
 
 		client->pool->push(temp);
 	}
@@ -186,6 +191,7 @@ bool Receive_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 	copy(temp->bytes, temp->bytes + size, bytes);
 	return_val = size == temp->size;
 	temp->size = -1;
+	delete [] temp->bytes;
 
 	client->pool->push(temp);
 	return return_val;
@@ -218,6 +224,7 @@ int Receive_Unsafe_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 	copy(temp->bytes, temp->bytes + temp->size, bytes);
 	return_val = temp->size;
 	temp->size = -1;
+	delete [] temp->bytes;
 
 	client->pool->push(temp);
 
