@@ -248,8 +248,8 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_MOUSEMOTION:
-				m_event.x = ((float)event.button.x)/* * video->x_scale */;
-				m_event.y = ((float)event.button.y)/* * video->y_scale*/;
+				m_event.x = event.button.x;
+				m_event.y = event.button.y;
 				m_event.clicked = false;
 				m_event.state = MOUSE_ABS_COORD;
 				m_event.event_index = video->mouse_count++;
@@ -258,8 +258,8 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 				//cout << "mouse motion event " << int(video->mouse_service->c->ws_client.client_id) << endl;
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				m_event.x = ((float)event.button.x)/* * video->x_scale*/;
-				m_event.y = ((float)event.button.y)/* * video->y_scale*/;
+				m_event.x = event.button.x;
+				m_event.y = event.button.y;
 				m_event.clicked = true;
 				m_event.state = 1;	// pressed
 				m_event.event_index = video->mouse_count++;
@@ -268,14 +268,38 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 							sizeof(MOUSE_EVENT_T));
 				break;
 			case SDL_MOUSEBUTTONUP:
-				m_event.x = ((float)event.button.x)/* * video->x_scale*/;
-				m_event.y = ((float)event.button.y)/* * video->y_scale*/;
+				m_event.x = event.button.x;
+				m_event.y = event.button.y;
 				m_event.clicked = true;
 				m_event.state = 0;	// released
 				m_event.event_index = video->mouse_count++;
 				m_event.button = event.button.button;
 				Send_CLIENT(video->mouse_service->c, (char *)&m_event,
 							sizeof(MOUSE_EVENT_T));
+				break;
+			case SDL_MOUSEWHEEL:
+				if (video->mouse_count++ % 8 != 0) break;
+				m_event.x = event.wheel.x;
+				m_event.y = event.wheel.y;
+				m_event.clicked = true;
+				m_event.state = 1;
+				m_event.event_index = video->mouse_count++;
+				m_event.button = (event.wheel.preciseY > 0) ? 4 : 5;
+
+				Send_CLIENT(video->mouse_service->c,
+					(char*) &m_event,
+					sizeof(MOUSE_EVENT_T));
+
+				m_event.x = event.wheel.x;
+				m_event.y = event.wheel.y;
+				m_event.clicked = true;
+				m_event.state = 0;
+				m_event.event_index = video->mouse_count++;
+				m_event.button = (event.wheel.preciseY > 0) ? 4 : 5;
+
+				Send_CLIENT(video->mouse_service->c,
+					(char*) &m_event,
+					sizeof(MOUSE_EVENT_T));
 				break;
 			case SDL_KEYDOWN:
 				k_event.code = event.key.keysym.sym;

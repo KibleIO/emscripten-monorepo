@@ -5,7 +5,6 @@
 #include <emscripten.h>
 
 #include <thread>
-
 #include "../LIMITS.h"
 #include "../Rana_Core_Utils/Hermes/CLIENT.h"
 #include "../Rana_Core_Utils/Utilities/ASSERT.h"
@@ -18,7 +17,7 @@
 #include "KEYBOARD_SERVICE.h"
 
 // god have mercy on us
-#define MAX_NAL_SIZE 200000
+#define MAX_NAL_SIZE 500000
 
 #define MINIMUM_WIDTH 480
 #define MINIMUM_HEIGHT 480
