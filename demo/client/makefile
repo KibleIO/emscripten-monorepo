@@ -3,7 +3,7 @@ EXEC = index.html
 SOURCES = $(wildcard *.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
-CXXFLAGS = -lwebsocket.js -sPROXY_TO_PTHREAD -sUSE_PTHREADS -sASYNCIFY
+CXXFLAGS = -lwebsocket.js -sUSE_PTHREADS -sASYNCIFY -sFETCH
 
 default: $(OBJECTS)
 	$(CC) $(OBJECTS) -o $(EXEC) $(CC_COMPILE_FLAGS) $(CXXFLAGS)

@@ -7,6 +7,7 @@
 
 #include "LIMITS.h"
 #include "STRINGS.h"
+#include "HTTP.h"
 #include "services/AUDIO_SERVICE.h"
 #include "services/CLIPBOARD_SERVICE.h"
 #include "services/KEYBOARD_SERVICE.h"
