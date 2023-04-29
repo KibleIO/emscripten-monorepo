@@ -6,6 +6,8 @@
 #include <string.h>
 
 #define MAX_HTTP_RESPONSE_SIZE 256
+#define HTTP_TIMEOUT 100
+#define HTTP_WAIT_MS 100
 
 struct HTTP_SYNC_OBJ {
 	bool loop_control;

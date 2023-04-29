@@ -26,6 +26,7 @@ void failure_http(emscripten_fetch_t *fetch) {
 
 bool issue_request(char *url, char *type, char *data, char *output) {
 	bool return_value;
+	int counter = HTTP_TIMEOUT;
 
 	HTTP_SYNC_OBJ *sync_obj = new HTTP_SYNC_OBJ;
 	sync_obj->loop_control = true;
@@ -50,12 +51,12 @@ bool issue_request(char *url, char *type, char *data, char *output) {
 
 	emscripten_fetch(&attr, url);
 
-	while (sync_obj->loop_control) {
-		emscripten_sleep(100);
+	while (sync_obj->loop_control && counter-- > 0) {
+		emscripten_sleep(HTTP_WAIT_MS);
 	}
 
 	return_value = sync_obj->success;
 	delete sync_obj;
 
-	return return_value;
+	return (counter > 0) && return_value;
 }
