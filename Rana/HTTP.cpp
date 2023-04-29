@@ -1,6 +1,6 @@
 #include "HTTP.h"
 
-void success_http(emscripten_fetch_t *fetch) {
+void HTTP_Success(emscripten_fetch_t *fetch) {
 	int characters_to_copy = fetch->numBytes;
 	HTTP_SYNC_OBJ *sync_obj = (HTTP_SYNC_OBJ*) fetch->userData;
 
@@ -16,7 +16,7 @@ void success_http(emscripten_fetch_t *fetch) {
 	sync_obj->success = true;
 }
 
-void failure_http(emscripten_fetch_t *fetch) {
+void HTTP_Failure(emscripten_fetch_t *fetch) {
 	HTTP_SYNC_OBJ *sync_obj = (HTTP_SYNC_OBJ*) fetch->userData;
 	emscripten_fetch_close(fetch);
 
@@ -24,7 +24,7 @@ void failure_http(emscripten_fetch_t *fetch) {
 	sync_obj->success = false;
 }
 
-bool issue_request(char *url, char *type, char *data, char *output) {
+bool HTTP_Request(char *url, char *type, char *data, char *output) {
 	bool return_value;
 	int counter = HTTP_TIMEOUT;
 
@@ -44,8 +44,8 @@ bool issue_request(char *url, char *type, char *data, char *output) {
 	attr.requestData = data;
 	attr.requestDataSize = strlen(attr.requestData);
 
-	attr.onsuccess = success_http;
-	attr.onerror = failure_http;
+	attr.onsuccess = HTTP_Success;
+	attr.onerror = HTTP_Failure;
 
 	attr.userData = (void*) sync_obj;
 

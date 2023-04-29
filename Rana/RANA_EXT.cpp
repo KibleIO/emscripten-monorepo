@@ -49,7 +49,7 @@ bool Connect_To_Themis_RANA_EXT(RANA_EXT *rana_ext) {
 		/* begin POST request */
 		char response[MAX_HTTP_RESPONSE_SIZE];
 
-		if (issue_request("https://hub.alienhub.xyz/ping", "POST",
+		if (HTTP_Request("https://hub.alienhub.xyz/ping", "POST",
 			"{\"value\":\"f2a3dbb7-f3b0-4a1d-9961-83bc243e38b4\"}",
 			response)) {
 

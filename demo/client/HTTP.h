@@ -15,6 +15,6 @@ struct HTTP_SYNC_OBJ {
 	char *output;
 };
 
-bool issue_request(char *url, char *type, char *data, char *output);
+bool HTTP_Request(char *url, char *type, char *data, char *output);
 
 #endif
