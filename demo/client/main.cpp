@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sys/time.h>
 #include <unistd.h>
+#include "HTTP.h"
 
 using namespace std;
 
@@ -13,6 +14,21 @@ int64_t getTime() {
 }
 
 int main() {
+	/* sample post request
+	char response[MAX_HTTP_RESPONSE_SIZE];
+
+	if (HTTP_Request("https://hub.alienhub.xyz/ping", "POST",
+		"{\"value\":\"f2a3dbb7-f3b0-4a1d-9961-83bc243e38b4\"}",
+		response)) {
+
+		cout << response << endl;
+	} else {
+		cout << "failed" << endl;
+	}
+
+	return 0;
+	*/
+
 	cout << "step 0" << endl;
 
 	WS_CLIENT_MASTER client_master;
