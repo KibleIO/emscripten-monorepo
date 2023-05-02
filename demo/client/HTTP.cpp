@@ -25,6 +25,13 @@ void HTTP_Failure(emscripten_fetch_t *fetch) {
 }
 
 bool HTTP_Request(char *url, char *type, char *data, char *output) {
+	return HTTP_Request_With_Header(url, type, data, output,
+		JSON_CONTENT_TYPE);
+}
+
+bool HTTP_Request_With_Header(char *url, char *type, char *data, char *output,
+	const char **headers) {
+	
 	bool return_value;
 	int counter = HTTP_TIMEOUT;
 
@@ -36,9 +43,9 @@ bool HTTP_Request(char *url, char *type, char *data, char *output) {
 	emscripten_fetch_attr_t attr;
 	emscripten_fetch_attr_init(&attr);
 	strcpy(attr.requestMethod, type);
-	attr.attributes = EMSCRIPTEN_FETCH_REPLACE | EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+	attr.attributes = EMSCRIPTEN_FETCH_REPLACE |
+		EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
 	
-	const char* headers[] = { "Content-Type", "application/json", 0 };
 	attr.requestHeaders = headers;
 
 	attr.requestData = data;
