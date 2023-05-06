@@ -1,5 +1,6 @@
 from debian:11
 
+SHELL ["/bin/bash", "-c"]
 RUN export DEBIAN_FRONTEND=noninteractive
 RUN apt update
 RUN apt install -y git cmake make gcc g++ wget python autoconf libtool curl unzip
