@@ -2,7 +2,7 @@ syntax = "proto3";
 package gaia;
 option go_package = "./gaia";
 
-service HelloWorld {
+service HELLOWORLD {
   rpc Hello(HelloReq) returns (HelloResp);
 }
 

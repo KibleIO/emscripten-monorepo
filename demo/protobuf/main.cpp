@@ -1,20 +1,17 @@
 #include <iostream>
-#include "client/HELLO_WORLD_CLIENT.h"
+#include "client/HELLOWORLD_CLIENT.h"
 #include "gen/test.pb.h"
 
 using namespace std;
 
 int main() {
-	HELLO_WORLD_CLIENT client;
-	gaia::HelloReq request;
-	gaia::HelloResp response;
+	HELLOWORLD_CLIENT client;
+	std::string response;
 
-	Initialize_HELLO_WORLD_CLIENT(&client, "http://localhost:3434");
+	Initialize_HELLOWORLD_CLIENT(&client, "http://localhost:3434");
 
-	request.set_subject("hello world123");
-
-	if (Hello_HELLO_WORLD_CLIENT(&client, &request, &response)) {
-		cout << response.text() << endl;
+	if (Hello_HELLOWORLD_CLIENT(&client, "hello world", &response)) {
+		cout << response << endl;
 	} else {
 		cout << "failed!" << endl;
 	}
