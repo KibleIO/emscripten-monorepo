@@ -1,6 +1,6 @@
 syntax = "proto3";
 package gaia;
-option go_package = "kible.io/gaia";
+option go_package = "./gaia";
 
 service HelloWorld {
   rpc Hello(HelloReq) returns (HelloResp);

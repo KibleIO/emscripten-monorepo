@@ -1,20 +1,23 @@
 #include <iostream>
+#include "client/HELLO_WORLD_CLIENT.h"
 #include "gen/test.pb.h"
-#include <google/protobuf/util/json_util.h>
 
 using namespace std;
 
 int main() {
-	std::string json_string;
-
+	HELLO_WORLD_CLIENT client;
 	gaia::HelloReq request;
-	request.set_subject("hello world");
+	gaia::HelloResp response;
 
-	google::protobuf::util::JsonPrintOptions options;
-	options.add_whitespace = false;
-	options.always_print_primitive_fields = true;
-	MessageToJsonString(request, &json_string, options);
+	Initialize_HELLO_WORLD_CLIENT(&client, "http://localhost:3434");
 
-	cout << json_string << endl;
+	request.set_subject("hello world123");
+
+	if (Hello_HELLO_WORLD_CLIENT(&client, &request, &response)) {
+		cout << response.text() << endl;
+	} else {
+		cout << "failed!" << endl;
+	}
+
 	return 0;
 }

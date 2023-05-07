@@ -1,6 +1,6 @@
 CC = em++ -O3
 EXEC = index.html
-SOURCES = $(wildcard *.cpp) $(wildcard gen/*.cpp)
+SOURCES = $(wildcard *.cpp) $(wildcard */*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
 CXXFLAGS = -pthread -sUSE_PTHREADS -sASYNCIFY -sFETCH protolib/libprotobuf.a
