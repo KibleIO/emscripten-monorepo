@@ -1,0 +1,6 @@
+#include "EDGE_CLIENT.h"
+
+HTTP_Protobuf_Init_Delete(kible.edge, EDGE, /api)
+
+HTTP_Protobuf_Endpoint_Definition(EDGE, Themis, kible::edge::ThemisRequest,
+	kible::edge::ThemisResponse)

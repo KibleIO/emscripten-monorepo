@@ -43,22 +43,20 @@ bool Connect_To_Themis_RANA_EXT(RANA_EXT *rana_ext) {
 		ADD_STR_LOG("message", "Attempting signin go.");
 	}
 
+	/* begin RPC call */
+	pb::EDGE_CLIENT client;
+
+	pb::Initialize_EDGE_CLIENT(&client, "http://localhost:8080");
+
+	kible::edge::ThemisRequest request;
+	kible::edge::ThemisResponse response;
+
+	pb::Themis_EDGE_CLIENT(&client, &request,
+		&response);
+	/* end RPC call */
+
 	rana_ext->error_string = SKIPPED_INIT_STRINGS;
 	if (!rana_ext->initialized_hermes) {
-
-		/* begin POST request */
-		char response[MAX_HTTP_RESPONSE_SIZE];
-
-		if (HTTP_Request("https://hub.alienhub.xyz/ping", "POST",
-			"{\"value\":\"f2a3dbb7-f3b0-4a1d-9961-83bc243e38b4\"}",
-			response)) {
-
-			cout << response << endl;
-		} else {
-			cout << "failed" << endl;
-		}
-		/* end POST request */
-
 		if (!Initialize_HERMES_CLIENT(
 				&rana_ext->hermes_client, rana_ext->ctx,
 				"127.0.0.1",
