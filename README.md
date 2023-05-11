@@ -21,5 +21,3 @@ Run caddy
 ```bash
 caddy run #localhost:2015
 ```
-
-source /Users/kevin/github/emsdk/emsdk_env.sh
