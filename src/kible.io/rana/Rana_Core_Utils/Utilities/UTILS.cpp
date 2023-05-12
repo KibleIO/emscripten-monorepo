@@ -38,15 +38,11 @@ void get_cookie(char *str_out) {
 
 	char *str = (char*)EM_ASM_PTR({
 		const value = `; ${document.cookie}`;
-		const parts = value.split(`; ${name}=`);
+		const parts = value.split(`; alien_session=`);
 		var jsString = 'nil';
 		if (parts.length === 2) jsString = parts.pop().split(';').shift();
-
-		var lengthBytes = lengthBytesUTF8(jsString)+1;
-
 		return stringToNewUTF8(jsString);
 	});
-	printf("UTF8 string says: %s\n", str);
 
 	characters_to_copy = strlen(str);
 	if (characters_to_copy > MAX_COOKIE_SIZE) {
@@ -54,7 +50,7 @@ void get_cookie(char *str_out) {
 	}
 
 	strncpy(str_out, str, characters_to_copy);
-  	str_out[MAX_HTTP_RESPONSE_SIZE - 1] = '\0';
+  	str_out[characters_to_copy] = '\0';
 
 	free(str);
 }

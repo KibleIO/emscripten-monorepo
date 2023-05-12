@@ -6,7 +6,6 @@ int main() {
 	get_cookie(cookie_value);
 	std::cout << "cookie: " << cookie_value << std::endl;
 
-
 	KCONTEXT ctx;
 	RANA_EXT rana_ext;
 
