@@ -1,16 +1,18 @@
 #use for debugging
 #CC = em++ -O0 -sUSE_SDL=2 -sUSE_PTHREADS 
-CC = em++ -O3 -sDISABLE_EXCEPTION_CATCHING=1 -sUSE_SDL=2 -sUSE_PTHREADS 
+CC = em++ -O3 -sDISABLE_EXCEPTION_CATCHING=1 -sUSE_SDL=2 -sUSE_PTHREADS -pthread
 BC = index.bc
 EXEC = index.js
-SOURCES = $(filter-out $(wildcard Broadway-H.264-decoder/*/*/*.cpp), $(wildcard *.cpp) $(wildcard */*.cpp) $(wildcard */*/*.cpp) $(wildcard */*/*/*.cpp))
+SOURCES = $(wildcard *.cpp) $(wildcard */*.cpp) $(wildcard */*/*.cpp) $(wildcard */*/*/*.cpp) $(wildcard ../gen/*/*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
+
+CC_BUILD_FLAGS = -I../protolib -I../gen
 
 CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=2048MB -sUSE_WEBGL2=1 \
 -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -sNO_EXIT_RUNTIME=1 \
 -sALIASING_FUNCTION_POINTERS=1 -sDOUBLE_MODE=0 --memory-init-file 1 \
-Broadway-H.264-decoder/libbroadway.a opus/build/.libs/libopus.a \
--sSTACK_SIZE=512MB -sPTHREAD_POOL_SIZE=20 -sFETCH
+../Broadway-H.264-decoder/libbroadway.a ../opus/.libs/libopus.a \
+../protolib/libprotobuf.a -sSTACK_SIZE=512MB -sPTHREAD_POOL_SIZE=20 -sFETCH
 
 #use for debugging
 #CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=2048MB -sUSE_WEBGL2=1 \
@@ -32,9 +34,3 @@ $(EXEC): $(OBJECTS)
 # To remove generated files
 clean:
 	rm -rf $(OBJECTS) $(EXEC) $(BC) index.wasm index.worker.js
-	
-build_broadway:
-	make -C Broadway-H.264-decoder
-
-clean_broadway:
-	make -C Broadway-H.264-decoder clean

@@ -7,7 +7,6 @@
 
 #include "LIMITS.h"
 #include "STRINGS.h"
-#include "HTTP.h"
 #include "services/AUDIO_SERVICE.h"
 #include "services/CLIPBOARD_SERVICE.h"
 #include "services/KEYBOARD_SERVICE.h"
@@ -15,6 +14,8 @@
 #include "services/THEMIS_SERVICE.h"
 #include "services/UI_SERVICE.h"
 #include "services/VIDEO_SERVICE.h"
+
+#include "pb/EDGE_CLIENT.h"
 
 struct RANA_EXT {
 	KCONTEXT *ctx;

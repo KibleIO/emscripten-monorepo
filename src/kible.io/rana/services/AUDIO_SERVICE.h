@@ -8,7 +8,7 @@
 #include "../Rana_Core_Utils/Hermes/CLIENT.h"
 #include "../Rana_Core_Utils/Utilities/ASSERT.h"
 #include "../Rana_Core_Utils/Utilities/KCONTEXT.h"
-#include "../opus/include/opus.h"
+#include "../../opus/include/opus.h"
 
 #define FRAME_SIZE_MS 20
 #define SAMPLE_RATE 48000  // Sample rate in Hz
