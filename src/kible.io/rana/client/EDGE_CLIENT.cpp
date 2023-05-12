@@ -4,7 +4,7 @@ bool Themis_EDGE_CLIENT(std::string session_id, std::string* themis_url) {
 	pb::EDGE_CLIENT client;
 	bool return_value;
 
-	pb::Initialize_EDGE_CLIENT(&client, "http://localhost:8080");
+	pb::Initialize_EDGE_CLIENT(&client, EDGE_SERVER_ADDRESS);
 
 	kible::edge::ThemisRequest request;
 	kible::edge::ThemisResponse response;
