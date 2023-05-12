@@ -4,6 +4,8 @@
 #include <string>
 #include "../pb/EDGE_CLIENT.h"
 
+#define EDGE_SERVER_ADDRESS "http://localhost:8080"
+
 bool Themis_EDGE_CLIENT(std::string, std::string*);
 
 #endif
