@@ -14,8 +14,7 @@
 #include "services/THEMIS_SERVICE.h"
 #include "services/UI_SERVICE.h"
 #include "services/VIDEO_SERVICE.h"
-
-#include "pb/EDGE_CLIENT.h"
+#include "client/EDGE_CLIENT.h"
 
 struct RANA_EXT {
 	KCONTEXT *ctx;

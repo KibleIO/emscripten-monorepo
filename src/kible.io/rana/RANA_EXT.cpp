@@ -44,15 +44,14 @@ bool Connect_To_Themis_RANA_EXT(RANA_EXT *rana_ext) {
 	}
 
 	/* begin RPC call */
-	pb::EDGE_CLIENT client;
+	std::string themis_url;
 
-	pb::Initialize_EDGE_CLIENT(&client, "http://localhost:8080");
+	if (Themis_EDGE_CLIENT("b2fed1bd-a072-44d1-8a31-37ae533341db", &themis_url)) {
+		std::cout << "success! " << themis_url << std::endl;
+	} else {
+		std::cout << "failed" << std::endl;
+	}
 
-	kible::edge::ThemisRequest request;
-	kible::edge::ThemisResponse response;
-
-	pb::Themis_EDGE_CLIENT(&client, &request,
-		&response);
 	/* end RPC call */
 
 	rana_ext->error_string = SKIPPED_INIT_STRINGS;
@@ -71,7 +70,6 @@ bool Connect_To_Themis_RANA_EXT(RANA_EXT *rana_ext) {
 
 		rana_ext->initialized_hermes = true;
 	}
-
 
 	// connect to themis
 	rana_ext->error_string = NO_THEMIS_STRINGS;
