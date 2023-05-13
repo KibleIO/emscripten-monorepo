@@ -33,7 +33,7 @@ void get_screen_width_height(int *width, int *height) {
 	*height = canvasHeight;
 }
 
-void get_cookie(char *str_out) {
+void Get_Cookie(char *str_out) {
 	int characters_to_copy;
 
 	char *str = (char*)EM_ASM_PTR({

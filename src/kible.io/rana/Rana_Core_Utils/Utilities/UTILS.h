@@ -21,6 +21,6 @@ void log_err(char *hello);
 
 void get_screen_width_height(int *width, int *height);
 
-void get_cookie(char *str);
+void Get_Cookie(char *str);
 
 #endif
