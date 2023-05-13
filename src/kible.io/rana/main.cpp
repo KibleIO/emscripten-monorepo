@@ -2,10 +2,6 @@
 #include "Rana_Core_Utils/Utilities/ASSERT.h"
 
 int main() {
-	char cookie_value[MAX_COOKIE_SIZE];
-	get_cookie(cookie_value);
-	std::cout << "cookie: " << cookie_value << std::endl;
-
 	KCONTEXT ctx;
 	RANA_EXT rana_ext;
 
