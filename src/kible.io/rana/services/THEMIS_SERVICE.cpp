@@ -1,0 +1,86 @@
+#include "THEMIS_SERVICE.h"
+
+bool Initialize_THEMIS_SERVICE(THEMIS_SERVICE *themis, KCONTEXT *ctx) {
+	themis->ctx = ctx;
+	themis->themis_status = HERMES_STATUS_DISCONNECTED;
+	themis->main_loop = NULL;
+	themis->main_loop_running = false;
+
+	ASSERT_E_R((Initialize_FPS_LIMITER(&themis->fps_limiter,
+		HERMES_STATUS_FPS, false)), "Failed to intialize fps limiter",
+		themis->ctx);
+
+	return true;
+}
+
+void Main_Loop_THEMIS_SERVICE(THEMIS_SERVICE *themis) {
+	int code;
+
+	while (themis->main_loop_running) {
+		Start_FPS_LIMITER(&themis->fps_limiter);
+
+		themis->themis_status = Status_HERMES_CLIENT(themis->client);
+
+		if (themis->themis_status != HERMES_STATUS_NORMAL) {
+			themis->main_loop_running = false;
+			break;
+		}
+
+		if (themis->ctx->screen_dim_changed) {
+			SCREEN_DIM screen_dim = Get_Screen_Dim_KCONTEXT(themis->ctx);
+
+			code = THEMIS_SERVICE_CODE_CHANGE_SCREEN_SIZE;
+			Send_CLIENT(themis->c, (char*) &code, sizeof(int));
+			Send_CLIENT(themis->c, (char*) &screen_dim, sizeof(SCREEN_DIM));
+			themis->ctx->screen_dim_changed = false;
+		} else {
+			code = THEMIS_SERVICE_CODE_NULL;
+			Send_CLIENT(themis->c, (char*) &code, sizeof(int));
+		}
+
+		Stop_FPS_LIMITER(&themis->fps_limiter);
+	}
+}
+
+bool Connect_THEMIS_SERVICE(THEMIS_SERVICE *themis, CLIENT *c,
+	HERMES_CLIENT *client) {
+
+	SCREEN_DIM screen_dim = Get_Screen_Dim_KCONTEXT(themis->ctx);
+
+	/*screen_dim.sw *= SCALE_RATIO;
+	screen_dim.bw *= SCALE_RATIO;
+	screen_dim.h *= SCALE_RATIO;*/
+
+	themis->themis_status = HERMES_STATUS_NORMAL;
+	themis->client = client;
+	themis->c = c;
+
+	ASSERT_E_R(themis->c != NULL, "Client is NULL", themis->ctx);
+	ASSERT_E_R(Send_CLIENT(themis->c, (char*)&screen_dim,
+		sizeof(SCREEN_DIM)),
+		"Couldn't send screen_dim", themis->ctx);
+
+	themis->main_loop_running = true;
+	themis->main_loop = new thread(Main_Loop_THEMIS_SERVICE, themis);
+
+	return true;
+}
+
+uint8_t Themis_Status_THEMIS_SERVICE(THEMIS_SERVICE *themis) {
+	return themis->themis_status;
+}
+
+void Disconnect_THEMIS_SERVICE(THEMIS_SERVICE *themis) {
+	themis->themis_status = HERMES_STATUS_DISCONNECTED;
+
+	themis->main_loop_running = false;
+	if (themis->main_loop != NULL) {
+		themis->main_loop->join();
+		delete themis->main_loop;
+		themis->main_loop = NULL;
+	}
+}
+
+void Delete_THEMIS_SERVICE(THEMIS_SERVICE *themis) {
+	Delete_FPS_LIMITER(&themis->fps_limiter);
+}
