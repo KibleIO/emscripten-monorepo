@@ -1,13 +1,23 @@
-So... how do I install emscripten?
-https://emscripten.org/docs/getting_started/downloads.html
+See [this](https://emscripten.org/docs/getting_started/downloads.html) for instructions on how to install emscripten.
 
 Set your env...
-source ~/github/emsdk/emsdk_env.sh
-
-install a local http server
-npm install http-server -g
-http-server
-
-install caddy
+```bash
+source path/to/emsdk/emsdk_env.sh
+```
+Build opus with emscripten
+```bash
+sh build_opus.sh
+```
+Pull or update submodules
+```bash
+git submodule foreach git pull origin master
+git submodule update --init --recursive
+```
+Install caddy
+```bash
 brew install caddy
-run caddy: caddy run
+```
+Run caddy
+```bash
+caddy run #localhost:2015
+```
