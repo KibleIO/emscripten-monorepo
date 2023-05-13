@@ -1,3 +1,6 @@
-[submodule "Rana/Broadway-H.264-decoder"]
-	path = Rana/Broadway-H.264-decoder
+[submodule "proto-monorepo"]
+	path = proto-monorepo
+	url = https://github.com/KibleIO/proto-monorepo
+[submodule "src/kible.io/Broadway-H.264-decoder"]
+	path = src/kible.io/Broadway-H.264-decoder
 	url = https://github.com/KibleIO/Broadway-H.264-decoder.git

@@ -9,6 +9,9 @@ demo/server/server
 hermes_test
 .DS_Store
 demo/client/index.html
+protolib
+gen
+demo/protobuf/index.html
 
 .vscode/
 obj/
