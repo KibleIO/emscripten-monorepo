@@ -33,3 +33,24 @@ void get_screen_width_height(int *width, int *height) {
 	*height = canvasHeight;
 }
 
+void Get_Cookie(char *str_out) {
+	int characters_to_copy;
+
+	char *str = (char*)EM_ASM_PTR({
+		const value = `; ${document.cookie}`;
+		const parts = value.split(`; alien_session=`);
+		var jsString = 'nil';
+		if (parts.length === 2) jsString = parts.pop().split(';').shift();
+		return stringToNewUTF8(jsString);
+	});
+
+	characters_to_copy = strlen(str);
+	if (characters_to_copy > MAX_COOKIE_SIZE) {
+		characters_to_copy = MAX_COOKIE_SIZE;
+	}
+
+	strncpy(str_out, str, characters_to_copy);
+  	str_out[characters_to_copy] = '\0';
+
+	free(str);
+}
