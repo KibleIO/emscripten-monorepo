@@ -1,8 +1,0 @@
-http://localhost:2015
-
-file_server
-
-header {
-	Cross-Origin-Embedder-Policy require-corp
-	Cross-Origin-Opener-Policy same-origin
-}
