@@ -1,7 +1,12 @@
 #include "KCONTEXT.h"
 
 void Initialize_KCONTEXT(KCONTEXT *ctx) {
+	char cookie[MAX_COOKIE_SIZE];
+
 	ctx->screen_dim_changed = false;
+
+	Get_Cookie(cookie);
+	ctx->uuid = cookie;
 }
 
 SCREEN_DIM Get_Screen_Dim_KCONTEXT(KCONTEXT *ctx) { return ctx->screen_dim; }
