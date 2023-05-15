@@ -116,10 +116,10 @@ bool Initialize_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client, KCONTEXT *ctx,
 		return false;
 	}
 
-	string address = "ws://";
+	string address = "wss://";
 	address += ip;
-	address += ":";
-	address += to_string(port);
+	//address += ":";
+	//address += to_string(port);
 
 	EmscriptenWebSocketCreateAttributes ws_attrs = {
 		address.c_str(), NULL, EM_FALSE
