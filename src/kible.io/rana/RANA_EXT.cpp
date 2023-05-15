@@ -46,6 +46,8 @@ bool Connect_To_Themis_RANA_EXT(RANA_EXT *rana_ext) {
 	/* begin RPC call */
 	std::string themis_url;
 
+	std::cout << "cookie session: " << rana_ext->ctx->uuid << std::endl;
+
 	if (Themis_EDGE_CLIENT(rana_ext->ctx->uuid, &themis_url)) {
 		std::cout << "success! " << themis_url << std::endl;
 	} else {
