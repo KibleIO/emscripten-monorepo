@@ -58,7 +58,7 @@ bool Connect_To_Themis_RANA_EXT(RANA_EXT *rana_ext) {
 	if (!rana_ext->initialized_hermes) {
 		if (!Initialize_HERMES_CLIENT(
 				&rana_ext->hermes_client, rana_ext->ctx,
-				themis_url.c_str(),
+				(char*) themis_url.c_str(),
 				THEMIS_PORT)) {
 			LOG_ERROR_CTX(rana_ext->ctx) {
 				ADD_STR_LOG("message", "Signin failed.");
