@@ -2,7 +2,7 @@
 #define LIMITS_H_
 
 //#define BUILD_UI_LOCALLY
-#define TESTING_BUILD
+//#define TESTING_BUILD
 
 #define SIZE_OF_RANA_IDENTIFIER 20
 #define SOFTWARE_VERSION "3.4.1" //poseidon
