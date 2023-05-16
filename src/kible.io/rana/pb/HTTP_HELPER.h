@@ -40,7 +40,6 @@ void pb::Delete_##service_actual_name##_CLIENT(\
 	bool endpoint_name##_##service_actual_name##_CLIENT(\
 		service_actual_name##_CLIENT*, request*, response*);\
 
-
 #define HTTP_Protobuf_Endpoint_Definition(service_actual_name, endpoint_name,\
 	request_obj, response_obj)\
 	bool pb::endpoint_name##_##service_actual_name##_CLIENT(pb::service_actual_name##_CLIENT *client,\
