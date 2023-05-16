@@ -43,25 +43,37 @@ bool Connect_To_Themis_RANA_EXT(RANA_EXT *rana_ext) {
 		ADD_STR_LOG("message", "Attempting signin go.");
 	}
 
-	/* begin RPC call */
 	std::string themis_url;
+	int port;
 
-	std::cout << "cookie session: " << rana_ext->ctx->uuid << std::endl;
+	#ifdef TESTING_BUILD
 
-	if (Themis_EDGE_CLIENT(rana_ext->ctx->uuid, &themis_url)) {
-		std::cout << "success! " << themis_url << std::endl;
-	} else {
-		std::cout << "failed" << std::endl;
+	port = THEMIS_PORT;
+	themis_url = "localhost";
+
+	#else
+
+	port = 443;
+	if (!Themis_EDGE_CLIENT(rana_ext->ctx->uuid, &themis_url)) {
+		LOG_ERROR_CTX(rana_ext->ctx) {
+			ADD_STR_LOG("message", "Signin failed.");
+			ADD_STR_LOG("error", "Couldn't query for edge server");
+		}
+
+		cout << "failed to query edge" << endl;
+		return false;
 	}
 
-	/* end RPC call */
+	themis_url = "kibcas1.hub.alienhub.xyz/ecab";
+
+	#endif
 
 	rana_ext->error_string = SKIPPED_INIT_STRINGS;
 	if (!rana_ext->initialized_hermes) {
 		if (!Initialize_HERMES_CLIENT(
 				&rana_ext->hermes_client, rana_ext->ctx,
 				(char*) themis_url.c_str(),
-				THEMIS_PORT)) {
+				port)) {
 			LOG_ERROR_CTX(rana_ext->ctx) {
 				ADD_STR_LOG("message", "Signin failed.");
 				ADD_STR_LOG("error", "Couldn't initialize hermes server");
