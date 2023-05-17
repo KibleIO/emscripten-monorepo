@@ -54,3 +54,22 @@ void Get_Cookie(char *str_out) {
 
 	free(str);
 }
+
+void Get_Url(char *str_out) {
+	int characters_to_copy;
+
+	char *str = (char*)EM_ASM_PTR({
+		return stringToNewUTF8(window.location.hostname);
+	});
+
+	characters_to_copy = strlen(str);
+	if (characters_to_copy > MAX_COOKIE_SIZE) {
+		characters_to_copy = MAX_COOKIE_SIZE;
+	}
+
+	strncpy(str_out, str, characters_to_copy);
+  	str_out[characters_to_copy] = '\0';
+
+	free(str);
+}
+

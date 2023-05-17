@@ -4,8 +4,6 @@
 #include <string>
 #include "../pb/EDGE_CLIENT.h"
 
-#define EDGE_SERVER_ADDRESS "https://hub.alienhub.xyz"
-
-bool Themis_EDGE_CLIENT(std::string, std::string*);
+bool Themis_EDGE_CLIENT(std::string, std::string, std::string*);
 
 #endif

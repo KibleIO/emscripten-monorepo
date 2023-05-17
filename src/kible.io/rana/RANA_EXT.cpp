@@ -63,7 +63,9 @@ bool Connect_To_Themis_RANA_EXT(RANA_EXT *rana_ext) {
 	#else
 
 	port = 443;
-	if (!Themis_EDGE_CLIENT(rana_ext->ctx->uuid, &themis_url)) {
+	if (!Themis_EDGE_CLIENT(std::string("https://") + rana_ext->ctx->url,
+		rana_ext->ctx->uuid, &themis_url)) {
+		
 		LOG_ERROR_CTX(rana_ext->ctx) {
 			ADD_STR_LOG("message", "Signin failed.");
 			ADD_STR_LOG("error", "Couldn't query for edge server");
@@ -73,7 +75,10 @@ bool Connect_To_Themis_RANA_EXT(RANA_EXT *rana_ext) {
 		return false;
 	}
 
-	themis_url = "kibcas1.hub.alienhub.xyz/ecab";
+	std::string delimiter = "alienhub.xyz";
+	themis_url = themis_url.substr(0, themis_url.find(delimiter)) +
+		rana_ext->ctx->url + themis_url.substr(
+		themis_url.find(delimiter) + delimiter.length());
 
 	if (!Launch_THEMIS_CLIENT(std::string("https://") + themis_url)) {
 		LOG_ERROR_CTX(rana_ext->ctx) {

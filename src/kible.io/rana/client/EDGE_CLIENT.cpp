@@ -1,10 +1,12 @@
 #include "EDGE_CLIENT.h"
 
-bool Themis_EDGE_CLIENT(std::string session_id, std::string* themis_url) {
+bool Themis_EDGE_CLIENT(std::string address, std::string session_id,
+	std::string* themis_url) {
+	
 	pb::EDGE_CLIENT client;
 	bool return_value;
 
-	pb::Initialize_EDGE_CLIENT(&client, EDGE_SERVER_ADDRESS);
+	pb::Initialize_EDGE_CLIENT(&client, address);
 
 	kible::edge::ThemisRequest request;
 	kible::edge::ThemisResponse response;

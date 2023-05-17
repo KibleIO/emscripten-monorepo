@@ -16,6 +16,7 @@ struct KCONTEXT{
 	SCREEN_DIM screen_dim;
 	bool screen_dim_changed;
 	std::string uuid;
+	std::string url;
 };
 
 void Initialize_KCONTEXT(KCONTEXT*);
