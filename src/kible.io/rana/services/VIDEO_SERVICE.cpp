@@ -91,6 +91,8 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
 	video->mouse_count = 1;
 	video->keyboard_count = 1;
 	video->texture = NULL;
+	video->ctrl_clicked = false;
+	video->relative_mode = false;
 
 	memset(video->nal_buffer, 0, MAX_NAL_SIZE);
 
@@ -248,14 +250,19 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_MOUSEMOTION:
-				m_event.x = event.button.x;
-				m_event.y = event.button.y;
+				if (video->relative_mode) {
+					m_event.state = MOUSE_REL_COORD;
+					m_event.x = event.motion.xrel;
+					m_event.y = event.motion.yrel;
+				} else {
+					m_event.state = MOUSE_ABS_COORD;
+					m_event.x = event.motion.x;
+					m_event.y = event.motion.y;
+				}
 				m_event.clicked = false;
-				m_event.state = MOUSE_ABS_COORD;
 				m_event.event_index = video->mouse_count++;
 				Send_CLIENT(video->mouse_service->c, (char *)&m_event,
 							sizeof(MOUSE_EVENT_T));
-				//cout << "mouse motion event " << int(video->mouse_service->c->ws_client.client_id) << endl;
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				m_event.x = event.button.x;
@@ -302,6 +309,11 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 					sizeof(MOUSE_EVENT_T));
 				break;
 			case SDL_KEYDOWN:
+				if (event.key.keysym.sym == SDLK_RCTRL ||
+					event.key.keysym.sym == SDLK_LCTRL) {
+					video->ctrl_clicked = true;
+				}
+
 				k_event.code = event.key.keysym.sym;
 				k_event.value = 1;
 				k_event.event_index = video->keyboard_count++;
@@ -310,6 +322,18 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 					sizeof(KEYBOARD_EVENT_T));
 				break;
 			case SDL_KEYUP:
+				if (event.key.keysym.sym == SDLK_RCTRL ||
+					event.key.keysym.sym == SDLK_LCTRL) {
+					video->ctrl_clicked = false;
+				} else if (event.key.keysym.sym == SDLK_1 &&
+					video->ctrl_clicked) {
+					
+					video->relative_mode =
+						!video->relative_mode;
+					SDL_SetRelativeMouseMode(
+						(SDL_bool)video->relative_mode);
+				}
+
 				k_event.code = event.key.keysym.sym;
 				k_event.value = 0;
 				k_event.event_index = video->keyboard_count++;

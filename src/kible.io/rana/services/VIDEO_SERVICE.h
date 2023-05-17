@@ -53,6 +53,8 @@ struct VIDEO_SERVICE {
 
 	float x_scale;
 	float y_scale;
+	bool ctrl_clicked;
+	bool relative_mode;
 
 	MOUSE_SERVICE *mouse_service;
 	KEYBOARD_SERVICE *keyboard_service;
