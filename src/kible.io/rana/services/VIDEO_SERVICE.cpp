@@ -219,7 +219,6 @@ void Decode_Buffer_VIDEO_SERVICE(VIDEO_SERVICE *video, char *buffer, int size) {
 	video->decoder.streamStop = (u8 *)buffer + size;
 	video->decoder.decInput.pStream = (u8 *)buffer;
 	video->decoder.decInput.dataLen = size;
-
 	
 	//==============
 
