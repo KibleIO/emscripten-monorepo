@@ -17,6 +17,7 @@ struct KCONTEXT{
 	bool screen_dim_changed;
 	std::string uuid;
 	std::string url;
+	std::string themis_api;
 };
 
 void Initialize_KCONTEXT(KCONTEXT*);

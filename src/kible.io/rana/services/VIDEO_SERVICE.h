@@ -15,6 +15,7 @@
 #include "../../Broadway-H.264-decoder/src/Decoder.h"
 #include "MOUSE_SERVICE.h"
 #include "KEYBOARD_SERVICE.h"
+#include "../client/THEMIS_CLIENT.h"
 
 // god have mercy on us
 #define MAX_NAL_SIZE 500000

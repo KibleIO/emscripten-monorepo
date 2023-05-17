@@ -324,13 +324,31 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 				if (event.key.keysym.sym == SDLK_RCTRL ||
 					event.key.keysym.sym == SDLK_LCTRL) {
 					video->ctrl_clicked = false;
-				} else if (event.key.keysym.sym == SDLK_1 &&
-					video->ctrl_clicked) {
-					
-					video->relative_mode =
-						!video->relative_mode;
-					SDL_SetRelativeMouseMode(
-						(SDL_bool)video->relative_mode);
+				} else if (video->ctrl_clicked) {
+					switch (event.key.keysym.sym) {
+						case SDLK_1:
+							video->relative_mode =
+								!video->relative_mode;
+							SDL_SetRelativeMouseMode(
+								(SDL_bool)video->relative_mode);
+							break;
+						case SDLK_2:
+							Density_THEMIS_CLIENT(video->ctx->themis_api,
+								kible::themis::PixelDensity::PIXELDENSITY_HIGH);
+							break;
+						case SDLK_3:
+							Density_THEMIS_CLIENT(video->ctx->themis_api,
+								kible::themis::PixelDensity::PIXELDENSITY_MEDIUM);
+							break;
+						case SDLK_4:
+							Density_THEMIS_CLIENT(video->ctx->themis_api,
+								kible::themis::PixelDensity::PIXELDENSITY_LOW);
+							break;
+						case SDLK_5:
+							Density_THEMIS_CLIENT(video->ctx->themis_api,
+								kible::themis::PixelDensity::PIXELDENSITY_PLACEBO);
+							break;
+					}
 				}
 
 				k_event.code = event.key.keysym.sym;

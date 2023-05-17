@@ -50,9 +50,9 @@ bool Connect_To_Themis_RANA_EXT(RANA_EXT *rana_ext) {
 
 	port = THEMIS_PORT;
 	themis_url = "localhost";
-	std::string themis_api = "http://localhost:4461";
+	rana_ext->ctx->themis_api = "http://localhost:4461";
 
-	if (!Launch_THEMIS_CLIENT(themis_api)) {
+	if (!Launch_THEMIS_CLIENT(rana_ext->ctx->themis_api)) {
 		LOG_ERROR_CTX(rana_ext->ctx) {
 			ADD_STR_LOG("message", "Signin failed.");
 			ADD_STR_LOG("error", "Couldn't launch themis server");
@@ -79,8 +79,10 @@ bool Connect_To_Themis_RANA_EXT(RANA_EXT *rana_ext) {
 	themis_url = themis_url.substr(0, themis_url.find(delimiter)) +
 		rana_ext->ctx->url + themis_url.substr(
 		themis_url.find(delimiter) + delimiter.length());
+	
+	rana_ext->ctx->themis_api = std::string("https://") + themis_url;
 
-	if (!Launch_THEMIS_CLIENT(std::string("https://") + themis_url)) {
+	if (!Launch_THEMIS_CLIENT(rana_ext->ctx->themis_api)) {
 		LOG_ERROR_CTX(rana_ext->ctx) {
 			ADD_STR_LOG("message", "Signin failed.");
 			ADD_STR_LOG("error", "Couldn't launch themis server");

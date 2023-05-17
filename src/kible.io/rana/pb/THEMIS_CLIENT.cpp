@@ -10,3 +10,5 @@ HTTP_Protobuf_Endpoint_Definition(THEMIS, Launch, kible::themis::LaunchRequest,
 	kible::themis::LaunchResponse)
 HTTP_Protobuf_Endpoint_Definition(THEMIS, Update, kible::themis::UpdateRequest,
 	kible::themis::UpdateResponse)
+HTTP_Protobuf_Endpoint_Definition(THEMIS, Density, kible::themis::DensityRequest,
+	kible::themis::DensityResponse)
