@@ -106,7 +106,7 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
 	// Create an SDL window and renderer
-	video->window = SDL_CreateWindow("YUV Rendering",
+	video->window = SDL_CreateWindow("Portal",
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800,
 		600, SDL_WINDOW_OPENGL);
 
