@@ -8,6 +8,8 @@
 #include <emscripten/emscripten.h>
 #include <thread>
 #include <string.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -24,5 +26,7 @@ void get_screen_width_height(int *width, int *height);
 void Get_Cookie(char*);
 
 void Get_Url(char *);
+
+int64_t getTime();
 
 #endif

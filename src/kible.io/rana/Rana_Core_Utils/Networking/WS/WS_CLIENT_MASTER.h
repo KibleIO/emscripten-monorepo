@@ -17,7 +17,7 @@
 #define MAX_WEBSOCKET_PACKET_SIZE 10000
 #define WEB_SOCKET_SLEEP_TIME 1
 #define MAX_HOSTS 20
-#define MAX_ACCUMULATED_FRAMES 10
+#define MAX_ACCUMULATED_FRAMES 26
 #define WEB_SOCKET_TIME_OUT 10
 #define WS_SLEEP_TIME 1
 
@@ -34,6 +34,7 @@ struct WS_CLIENT_MASTER {
 
 	Queue<WEBSOCKET_ELEMENT*>	*pool;
 	Queue<WEBSOCKET_ELEMENT*>	*active_read[MAX_HOSTS];
+	thread *websocket_thread;
 	
 	#ifdef __EMSCRIPTEN__
 

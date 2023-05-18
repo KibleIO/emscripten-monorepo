@@ -93,6 +93,18 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
 	video->texture = NULL;
 	video->ctrl_clicked = false;
 	video->relative_mode = false;
+	video->rendering = false;
+
+	video->front_buffer = &video->buffer1;
+	video->back_buffer = &video->buffer2;
+
+	video->buffer1.width = 800;
+	video->buffer1.height = 600;
+	video->buffer1.buffer = new char[video->buffer1.width * video->buffer1.height * 4];
+
+	video->buffer2.width = 800;
+	video->buffer2.height = 600;
+	video->buffer2.buffer = new char[video->buffer2.width * video->buffer2.height * 4];
 
 	memset(video->nal_buffer, 0, MAX_NAL_SIZE);
 
@@ -117,8 +129,9 @@ bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
 	}
 
 	Report_Resize_Function_VIDEO_SERVICE(video);
-	video->width = 800;
-	video->height = 600;
+	Actually_Resize_Window_VIDEO_SERVICE(video,
+				800,
+				600);
 
 	emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW,
 		(void*) video, 0, Emscripten_HandleResize);
@@ -130,31 +143,37 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 	void *user_data) {
 
 	VIDEO_SERVICE *video = (VIDEO_SERVICE*) user_data;
+	FRAMEBUFFER *swapper;
 	
 	if (video->decoder.decInfo.croppingFlag) {
-		if (video->decoder.decInfo.cropParams.cropOutWidth != video->width ||
-			video->decoder.decInfo.cropParams.cropOutHeight != video->height) {
+		if (video->back_buffer->width != video->decoder.decInfo.cropParams.cropOutWidth ||
+			video->back_buffer->height != video->decoder.decInfo.cropParams.cropOutHeight) {
+			
+			video->back_buffer->width = video->decoder.decInfo.cropParams.cropOutWidth;
+			video->back_buffer->height = video->decoder.decInfo.cropParams.cropOutHeight;
+			int size = (video->back_buffer->width * video->back_buffer->height) + ((video->back_buffer->width * video->back_buffer->height) / 2);
 
-			Actually_Resize_Window_VIDEO_SERVICE(video,
-				video->decoder.decInfo.cropParams.cropOutWidth,
-				video->decoder.decInfo.cropParams.cropOutHeight);
+			delete [] video->back_buffer->buffer;
+			video->back_buffer->buffer = new char[size];
 		}
+		
 	} else {
-		if (video->decoder.decInfo.picWidth != video->width ||
-			video->decoder.decInfo.picHeight != video->height) {
+		if (video->back_buffer->width != video->decoder.decInfo.picWidth ||
+			video->back_buffer->height != video->decoder.decInfo.picHeight) {
 
-			Actually_Resize_Window_VIDEO_SERVICE(video,
-				video->decoder.decInfo.picWidth,
-				video->decoder.decInfo.picHeight);
-		}
+			video->back_buffer->width = video->decoder.decInfo.picWidth;
+			video->back_buffer->height = video->decoder.decInfo.picHeight;
+			int size = (video->back_buffer->width * video->back_buffer->height) + ((video->back_buffer->width * video->back_buffer->height) / 2);
+
+			delete [] video->back_buffer->buffer;
+			video->back_buffer->buffer = new char[size];
+		}	
 	}
-
-
+	
 	// Lock the texture to get a pointer to the texture pixels
-	uint8_t *dst;
-	int dst_width;
-	int dst_height = video->height;
-	SDL_LockTexture(video->texture, NULL, (void **)&dst, &dst_width);
+	uint8_t *dst = (uint8_t*) video->back_buffer->buffer;
+	int dst_width = video->back_buffer->width;
+	int dst_height = video->back_buffer->height;
 
 	// Copy the YUV bytes to the texture pixels pointer
 
@@ -172,15 +191,15 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 	unsigned char *dst_u = dst + dst_y_size;
 	unsigned char *dst_v = dst + dst_y_size + dst_u_size;
 
-	int iterator_height = MIN(video->height, src_height);
-	int iterator_width = MIN(video->width, src_width);
-
+	int iterator_height = MIN(video->back_buffer->height, src_height);
+	int iterator_width = MIN(video->back_buffer->width, src_width);
+	
 	for (int i = 0; i < iterator_height; i++) {
 		memcpy(dst_y, src_y, iterator_width);
 		dst_y += dst_width;
 		src_y += src_width;
 	}
-
+	
 	for (int i = 0; i < iterator_height / 2; i++) {
 		memcpy(dst_u, src_u, iterator_width / 2);
 		dst_u += dst_width / 2;
@@ -193,16 +212,11 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 		src_v += src_width / 2;
 	}
 
-	// Unlock the texture
-	SDL_UnlockTexture(video->texture);
-
-	// Clear the renderer
-	SDL_RenderClear(video->renderer);
-	// Copy the texture to the renderer
-	SDL_RenderCopy(video->renderer, video->texture, NULL, NULL);
-	// Render the texture to the screen
-	SDL_RenderPresent(video->renderer);
-	// cout << "before" << endl;
+	if (!video->rendering) {
+		swapper = video->back_buffer;
+		video->back_buffer = video->front_buffer;
+		video->front_buffer = swapper;
+	}
 }
 
 extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height,
@@ -232,19 +246,21 @@ void Decode_Buffer_VIDEO_SERVICE(VIDEO_SERVICE *video, char *buffer, int size) {
 	} while (video->decoder.decInput.dataLen > 0);
 }
 
-void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
+void Main_TCP_Loop_VIDEO_SERVICE(void *arg/*VIDEO_SERVICE *video*/) {
 	//cout << "time: " << Stop_TIMER(&t) << endl;
 
 	//============== < 1ms
-	//VIDEO_SERVICE *video = (VIDEO_SERVICE *)arg;
+	VIDEO_SERVICE *video = (VIDEO_SERVICE *)arg;
 
 	MOUSE_EVENT_T m_event;
 	KEYBOARD_EVENT_T k_event;
 
 	int temp_width;
 	int temp_height;
+	//TIMER t;
 
-	while (video->main_loop_running) {
+	//while (video->main_loop_running) {
+		//cout << "starting main loop: " << getTime() << endl;
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
@@ -365,20 +381,78 @@ void Main_TCP_Loop_VIDEO_SERVICE(/*void *arg*/VIDEO_SERVICE *video) {
 				break;
 			}
 		}
+
+		
+		video->rendering = true;
+
+		if (video->front_buffer->width != video->width ||
+			video->front_buffer->height != video->height) {
+
+			Actually_Resize_Window_VIDEO_SERVICE(video,
+				video->front_buffer->width,
+				video->front_buffer->height);
+		}
+
+		uint8_t *dst;
+		int dst_width;
+		int dst_height = video->front_buffer->height;
+		SDL_LockTexture(video->texture, NULL, (void **)&dst, &dst_width);
+
+		unsigned char *src_ptr = (unsigned char *) video->front_buffer->buffer;
+		unsigned char *dst_ptr = dst;
+		
+		int size = (video->front_buffer->width * video->front_buffer->height) + ((video->front_buffer->width * video->front_buffer->height) / 2);
+
+		memcpy(dst_ptr, src_ptr, size);
+		
+		// Unlock the texture
+		SDL_UnlockTexture(video->texture);
+
+		// Clear the renderer
+		SDL_RenderClear(video->renderer);
+		// Copy the texture to the renderer
+		SDL_RenderCopy(video->renderer, video->texture, NULL, NULL);
+		// Render the texture to the screen
+		SDL_RenderPresent(video->renderer);
+
+		video->rendering = false;
 		//==============
 		
 		//============== < 10ms && < 70ms
+		/*
 		int size;
+		Start_TIMER(&t);
 		if (Receive_CLIENT(video->c, (char *)&size, sizeof(int)) &&
 			Receive_CLIENT(video->c, video->nal_buffer, size)) {
+			cout << "outer time: " << Stop_TIMER(&t) << " " << getTime() << endl;
+			Start_TIMER(&t);
 			//============== < 5ms
 			Decode_Buffer_VIDEO_SERVICE(video, video->nal_buffer, size);
+			cout << "render time: " << Stop_TIMER(&t) << " " << getTime() << endl;
 			//==============
 		}
+		*/
+		
 		//==============
-	}
+	//}
 
 	//Start_TIMER(&t);
+}
+
+void render_thread(VIDEO_SERVICE *video) {
+	//TIMER ttt;
+	int size;
+	while (true) {
+		if (Receive_CLIENT(video->c, (char *)&size, sizeof(int)) &&
+			Receive_CLIENT(video->c, video->nal_buffer, size)) {
+			//cout << "outer time123: " << Stop_TIMER(&ttt) << " " << getTime() << endl;
+			//============== < 5ms
+			//Start_TIMER(&ttt);
+			Decode_Buffer_VIDEO_SERVICE(video, video->nal_buffer, size);
+			//cout << "render time: " << Stop_TIMER(&ttt) << " " << getTime() << " " << video->c->ws_client.ws_master->active_read[3]->size() << endl;
+			//==============
+		}
+	}
 }
 
 bool Resize_VIDEO_SERVICE(VIDEO_SERVICE *video, int width, int height) {
@@ -406,11 +480,14 @@ bool Connect_VIDEO_SERVICE(VIDEO_SERVICE *video, CLIENT *video_init,
 			   "Failed to receive headers", video->ctx);
 	video->main_loop_running = true;
 
-	Main_TCP_Loop_VIDEO_SERVICE(video);
-	
-	//emscripten_set_main_loop_arg(
-	//	[](void *arg) { Main_TCP_Loop_VIDEO_SERVICE(arg); }, video, 60, 1);
-	// video->main_loop = new thread(Main_TCP_Loop_VIDEO_SERVICE, video);
+	//Main_TCP_Loop_VIDEO_SERVICE(video);
+	video->main_loop = new thread(render_thread, video);
+	emscripten_set_main_loop_arg(
+		[](void *arg) { Main_TCP_Loop_VIDEO_SERVICE(arg); }, video, 0, 1);
+	 //
+	 //while (true) {
+	//	Sleep_Milli(1000);
+	//}
 
 	return true;
 }

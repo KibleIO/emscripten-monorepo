@@ -12,11 +12,12 @@ CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=2048MB -sUSE_WEBGL2=1 \
 -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -sNO_EXIT_RUNTIME=1 \
 -sALIASING_FUNCTION_POINTERS=1 -sDOUBLE_MODE=0 --memory-init-file 1 \
 ../Broadway-H.264-decoder/libbroadway.a ../opus/.libs/libopus.a \
-../protolib/libprotobuf.a -sSTACK_SIZE=512MB -sPTHREAD_POOL_SIZE=20 -sFETCH
+../protolib/libprotobuf.a -sSTACK_SIZE=512MB -sPTHREAD_POOL_SIZE=20 -sFETCH -sALLOW_MEMORY_GROWTH
 
 #use for debugging
 #CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=2048MB -sUSE_WEBGL2=1 \
-#Broadway-H.264-decoder/libbroadway.a -sSTACK_SIZE=1024MB
+../Broadway-H.264-decoder/libbroadway.a ../opus/.libs/libopus.a \
+../protolib/libprotobuf.a -sSTACK_SIZE=512MB -sPTHREAD_POOL_SIZE=20 -sFETCH -sALLOW_MEMORY_GROWTH
 
 default: $(OBJECTS)
 	$(CC) -r $(OBJECTS) -o $(BC)

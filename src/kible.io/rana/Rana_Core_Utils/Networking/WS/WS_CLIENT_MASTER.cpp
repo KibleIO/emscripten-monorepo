@@ -32,6 +32,11 @@ EM_BOOL On_Close_WS_CLIENT_MASTER(int eventType,
 EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 	const EmscriptenWebSocketMessageEvent *websocketEvent, void *userData) {
 	
+	//if (int(websocketEvent->data[0]) == 3) {
+		//cout << "received data " << getTime() << endl;
+	//	return EM_FALSE;
+	//}
+
 	WS_CLIENT_MASTER *client = (WS_CLIENT_MASTER*) userData;
 	WEBSOCKET_ELEMENT *temp = NULL;
 	uint32_t time_out = 0;
@@ -49,7 +54,9 @@ EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 
 		//a reader is getting lazy... drop this packet
 		//log_err("a reader got lazy, dropping this packet.");
-		cout << "dropping packet" << endl;
+		if (int(websocketEvent->data[0]) == 3) {
+			cout << "HEYYYYYEYEYEYYEYEYEYEYEYEY " << client->active_read[int(websocketEvent->data[0])]->size() << " " << getTime() << endl;
+		}
 		return EM_FALSE;
 	}
 
@@ -80,6 +87,10 @@ EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 	temp->size = len - 1;
 
 	client->active_read[int(websocketEvent->data[0])]->push(temp);
+
+	//if (int(websocketEvent->data[0]) == 3) {
+	//	cout << "finished processing " << getTime() << endl;
+	//}
 
 	return EM_TRUE;
 }
@@ -172,6 +183,7 @@ bool Send_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 	return true;
 }
 
+
 bool Receive_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 	uint8_t* bytes, int32_t size, int32_t recv_timeout,
 	uint8_t client_index) {
@@ -187,7 +199,6 @@ bool Receive_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 		Sleep_Milli(WS_SLEEP_TIME);
 	}
 	if (time_out >= recv_timeout || !client->accept) {
-
 		return false;
 	}
 	

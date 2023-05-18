@@ -73,3 +73,8 @@ void Get_Url(char *str_out) {
 	free(str);
 }
 
+int64_t getTime() {
+	timeval start;
+	gettimeofday(&start, NULL);
+	return ((start.tv_sec) * 1000 + start.tv_usec / 1000.0) + 0.5;
+}

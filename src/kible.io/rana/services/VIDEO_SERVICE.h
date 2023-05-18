@@ -29,6 +29,12 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
+struct FRAMEBUFFER {
+	char *buffer;
+	int width;
+	int height;
+};
+
 struct VIDEO_SERVICE {
 	KCONTEXT *ctx;
 
@@ -51,6 +57,13 @@ struct VIDEO_SERVICE {
 	int keyboard_count;
 
 	int width, height;
+	volatile bool rendering;
+
+	FRAMEBUFFER *front_buffer;
+	FRAMEBUFFER *back_buffer;
+
+	FRAMEBUFFER buffer1;
+	FRAMEBUFFER buffer2;
 
 	float x_scale;
 	float y_scale;
