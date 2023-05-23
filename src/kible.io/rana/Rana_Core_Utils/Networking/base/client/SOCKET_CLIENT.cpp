@@ -9,7 +9,7 @@ bool Initialize_SOCKET_CLIENT(SOCKET_CLIENT *CLIENT,
 	switch (CLIENT->type) {
 		case ROOT_SOCKET_TYPE_WS:
 			return Initialize_WS_CLIENT(
-				&CLIENT->ws_CLIENT, callback, registry, ctx,
+				&CLIENT->ws_client, callback, registry, ctx,
 				user_ptr);
 		default:
 			return false;
@@ -20,7 +20,7 @@ bool Initialize_SOCKET_CLIENT(SOCKET_CLIENT *CLIENT,
 bool Send_SOCKET_CLIENT(SOCKET_CLIENT *CLIENT, char *buffer, int size) {
 	switch (CLIENT->type) {
 		case ROOT_SOCKET_TYPE_WS:
-			return Send_WS_CLIENT(&CLIENT->ws_CLIENT, buffer, size);
+			return Send_WS_CLIENT(&CLIENT->ws_client, buffer, size);
 		default:
 			return false;
 	}
@@ -29,6 +29,6 @@ bool Send_SOCKET_CLIENT(SOCKET_CLIENT *CLIENT, char *buffer, int size) {
 void Delete_SOCKET_CLIENT(SOCKET_CLIENT *CLIENT) {
 	switch (CLIENT->type) {
 		case ROOT_SOCKET_TYPE_WS:
-			Delete_WS_CLIENT(&CLIENT->ws_CLIENT);
+			Delete_WS_CLIENT(&CLIENT->ws_client);
 	}
 }

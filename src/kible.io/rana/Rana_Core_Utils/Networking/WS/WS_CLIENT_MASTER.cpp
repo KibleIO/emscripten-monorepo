@@ -49,13 +49,13 @@ EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 		return EM_FALSE;
 	}
 
-	std::cout << "On_Message_WS_CLIENT_MASTER3" << std::endl;
+	//std::cout << "On_Message_WS_CLIENT_MASTER3 " << int(websocketEvent->data[0]) << " " << len << " " << (void*) client->consumers << std::endl;
 
-	if (client->consumers[int(websocketEvent->data[0])] != NULL) {
-		std::cout << "On_Message_WS_CLIENT_MASTER51212 " << int(websocketEvent->data[0]) << " " << len << " " << std::endl;
-		std::cout << "On_Message_WS_CLIENT_MASTER5 " << int(websocketEvent->data[0]) << " " << len << " " << (void*) client->consumers[int(websocketEvent->data[0])] << std::endl;
-		client->consumers[int(websocketEvent->data[0])]->callback(
-			client->consumers[int(websocketEvent->data[0])]->user_ptr,
+	if (client->consumers[int(websocketEvent->data[0])].callback != NULL) {
+		//std::cout << "On_Message_WS_CLIENT_MASTER51212 " << int(websocketEvent->data[0]) << " " << len << " " << std::endl;
+		//std::cout << "On_Message_WS_CLIENT_MASTER5 " << int(websocketEvent->data[0]) << " " << len << std::endl;
+		client->consumers[int(websocketEvent->data[0])].callback(
+			client->consumers[int(websocketEvent->data[0])].user_ptr,
 			(char*)websocketEvent->data + 1,
 			len - 1);
 	}
@@ -74,8 +74,10 @@ bool Initialize_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client, KCONTEXT *ctx,
 
 	Set_Name_WS_CLIENT_MASTER(client, "unknown");
 
+	std::cout << "setting everything to null" << std::endl;
+
 	for (int i = 0; i < MAX_HOSTS; i++) {
-		client->consumers[i] = NULL;
+		client->consumers[i].callback = NULL;
 	}
 
 	#ifdef __EMSCRIPTEN__
@@ -125,7 +127,6 @@ bool Send_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 		size = MAX_WEBSOCKET_PACKET_SIZE - 1;
 	}
 	
-
 	uint8_t	send_bytes[MAX_WEBSOCKET_PACKET_SIZE];
 
 	send_bytes[0] = client_index;
@@ -148,9 +149,11 @@ uint8_t Register_Vhost_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 		return -1;
 	}
 
-	client->consumers[client->host_count] = new WEBSOCKET_CONSUMER;
-	client->consumers[client->host_count]->user_ptr = user_ptr;
-	client->consumers[client->host_count]->callback = callback;
+	//client->consumers[int(client->host_count)] = new WEBSOCKET_CONSUMER;
+	client->consumers[int(client->host_count)].user_ptr = user_ptr;
+	client->consumers[int(client->host_count)].callback = callback;
+
+	//std::cout << "registering " << int(client->host_count) << " " << (void*) client->consumers << " " << (void*) client->consumers[int(client->host_count)] << " " << (void*) client->consumers[0] << std::endl;
 
 	return client->host_count++;
 }

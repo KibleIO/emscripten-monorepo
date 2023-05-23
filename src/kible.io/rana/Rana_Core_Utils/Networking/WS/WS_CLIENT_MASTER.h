@@ -40,7 +40,7 @@ struct WS_CLIENT_MASTER {
 
 	thread *websocket_thread;
 
-	WEBSOCKET_CONSUMER *consumers[MAX_HOSTS];
+	WEBSOCKET_CONSUMER consumers[MAX_HOSTS];
 	
 	#ifdef __EMSCRIPTEN__
 

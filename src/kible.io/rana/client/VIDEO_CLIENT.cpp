@@ -15,6 +15,7 @@ void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
 	std::cout << "pushed " << buffer_size << std::endl;
 	*/
 
+	
 	VIDEO_CLIENT *client = (VIDEO_CLIENT*) user_ptr;
 	VIDEO_ELEMENT *element = new VIDEO_ELEMENT;
 
@@ -27,6 +28,10 @@ void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
 	//delete element;
 
 	client->pool->push(element);
+	
+	//VIDEO_CLIENT *client = (VIDEO_CLIENT*) user_ptr;
+
+	//Decode_Buffer_VIDEO_CLIENT(client, (char*) buffer, buffer_size);
 }
 
 static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData) {
@@ -80,7 +85,7 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 		   broadwayGetMinorVersion()));
 
 	broadwayInit(&decoder, 0, 0, 0, 0, (void*) this);
-	byteStrmStart = broadwayCreateStream(&decoder, 1920*1080*4);
+	byteStrmStart = broadwayCreateStream(&decoder, MAX_NAL_SIZE);
 
 	// Initialize SDL
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
@@ -122,7 +127,6 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 
 	VIDEO_CLIENT *video = (VIDEO_CLIENT*) user_data;
 	
-	/*
 	if (video->decoder.decInfo.croppingFlag) {
 		if (video->decoder.decInfo.cropParams.cropOutWidth != video->width ||
 			video->decoder.decInfo.cropParams.cropOutHeight != video->height) {
@@ -194,15 +198,14 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 	// Render the texture to the screen
 	SDL_RenderPresent(video->renderer);
 	// cout << "before" << endl;
-	*/
 }
 
 extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height,
 	void *user_data) {
 	
-	std::cout << "in broadwayOnPictureDecoded new" << std::endl;
+	//std::cout << "in broadwayOnPictureDecoded new" << std::endl;
 
-	//yuv_to_pixels(buffer, width, height, user_data);
+	yuv_to_pixels(buffer, width, height, user_data);
 }
 
 extern void broadwayOnHeadersDecoded() { printf("header decoded\n"); }
@@ -211,7 +214,7 @@ TIMER t;
 
 void Decode_Buffer_VIDEO_CLIENT(VIDEO_CLIENT *video, char *buffer, int size) {
 
-	std::cout << "in Decode_Buffer_VIDEO_CLIENT" << std::endl;
+	//std::cout << "in Decode_Buffer_VIDEO_CLIENT" << std::endl;
 
 	video->decoder.streamStop = (u8 *)buffer + size;
 	video->decoder.decInput.pStream = (u8 *)buffer;
@@ -223,14 +226,12 @@ void Decode_Buffer_VIDEO_CLIENT(VIDEO_CLIENT *video, char *buffer, int size) {
 	u32 i = 0;
 	do {
 		u8 *start = video->decoder.decInput.pStream;
-		std::cout << "starting Decode_Buffer_VIDEO_CLIENT" << std::endl;
 		u32 ret = broadwayDecode(&video->decoder);
-		std::cout << "ending Decode_Buffer_VIDEO_CLIENT" << std::endl;
 		//printf("Decoded Unit #%d, Size: %d, Result: %d\n", i++,
 		//	   (video->decoder.decInput.pStream - start), ret);
 	} while (video->decoder.decInput.dataLen > 0);
 
-	std::cout << "super ending" << std::endl;
+	//std::cout << "super ending" << std::endl;
 }
 
 void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
@@ -377,7 +378,7 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
 
 			//uint64_t HashVal = komihash( (char*) element->bytes, element->size, 0);
 
-			//std::cout << "poped " << element->size << " " << video->pool->size() << " " << HashVal << std::endl;
+			std::cout << "poped " << element->size << " " << video->pool->size() << std::endl;
 			//Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
 
 

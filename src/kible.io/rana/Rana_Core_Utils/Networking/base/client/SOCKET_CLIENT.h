@@ -9,7 +9,7 @@
 struct SOCKET_CLIENT {
 	int type;
 	union {
-		WS_CLIENT ws_CLIENT;
+		WS_CLIENT ws_client;
 	};
 };
 
