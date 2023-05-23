@@ -12,6 +12,8 @@ int main() {
 
 	Initialize_KCONTEXT(&ctx);
 
+	ctx.core_services_backbone = ROOT_SOCKET_TYPE_WS;
+
 	#ifdef TESTING_BUILD
 
 	ctx.core_services_backbone_port = THEMIS_PORT;
@@ -42,8 +44,11 @@ int main() {
 
 	#endif
 
+	ASSERT_E_R((Launch_THEMIS_CLIENT(&ctx)),
+		"failed to launch themis", &ctx);
+
 	ASSERT_E_R((Initialize_RANA_EXT(&rana_ext, &ctx)),
-			   "failed to initialize rana_ext", &ctx);
+		"failed to initialize rana_ext", &ctx);
 
 	return 0;
 }

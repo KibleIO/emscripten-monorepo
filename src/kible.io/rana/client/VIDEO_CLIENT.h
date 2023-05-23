@@ -12,6 +12,7 @@
 #include "../Rana_Core_Utils/Utilities/MOUSE.h"
 #include "../Rana_Core_Utils/Utilities/KEYBOARD.h"
 #include "../Rana_Core_Utils/Utilities/TIMER.h"
+#include "../Rana_Core_Utils/Utilities/CONCURRENT_QUEUE.h"
 #include "../../Broadway-H.264-decoder/src/Decoder.h"
 #include "MOUSE_CLIENT.h"
 #include "KEYBOARD_CLIENT.h"
@@ -20,21 +21,20 @@
 // god have mercy on us
 #define MAX_NAL_SIZE 500000
 
-#define MINIMUM_WIDTH 480
-#define MINIMUM_HEIGHT 480
-
-#define MAXIMUM_WIDTH 1920
-#define MAXIMUM_HEIGHT 1080
-
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
+
+struct VIDEO_ELEMENT {
+	int32_t		size;
+	uint8_t*	bytes;
+};
 
 struct VIDEO_CLIENT : public SERVICE_CLIENT {
 	KCONTEXT *ctx;
 
 	thread *main_loop;
 	volatile bool main_loop_running;
-	char nal_buffer[MAX_NAL_SIZE];
+	//char nal_buffer[MAX_NAL_SIZE];
 
 	SDL_Window *window;
 	SDL_Renderer *renderer;
@@ -57,6 +57,7 @@ struct VIDEO_CLIENT : public SERVICE_CLIENT {
 	bool relative_mode;
 
 	SOCKET_CLIENT socket_client;
+	Queue<VIDEO_ELEMENT*>	*pool;
 
 	bool Initialize(KCONTEXT*, SERVICE_CLIENT_REGISTRY*) override;
 	void Delete() override;

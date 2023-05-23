@@ -31,6 +31,30 @@ void get_screen_width_height(int *width, int *height) {
 	
 	*width = canvasWidth;
 	*height = canvasHeight;
+
+	if (*width < MINIMUM_WIDTH) {
+		*width = MINIMUM_WIDTH;
+	}
+
+	if (*height < MINIMUM_HEIGHT) {
+		*height = MINIMUM_HEIGHT;
+	}
+
+	if (*width > MAXIMUM_WIDTH) {
+		*width = MAXIMUM_WIDTH;
+	}
+
+	if (*height > MAXIMUM_HEIGHT) {
+		*height = MAXIMUM_HEIGHT;
+	}
+
+	if (*width % 32 != 0) {
+		*width = (*width / 32) * 32;
+	}
+
+	if (*height % 32 != 0) {
+		*height = (*height / 32) * 32;
+	}
 }
 
 void Get_Cookie(char *str_out) {

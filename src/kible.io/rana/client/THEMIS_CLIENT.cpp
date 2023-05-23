@@ -1,29 +1,37 @@
 #include "THEMIS_CLIENT.h"
 
-bool THEMIS_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) {
+bool Launch_THEMIS_CLIENT(KCONTEXT *ctx) {
+	pb::THEMIS_CLIENT client_t;
+	bool return_value;
+	int width;
+	int height;
+	std::string url;
+
 	#ifdef TESTING_BUILD
 
-	url = std::string("http://") + ctx->themis_url + std::to_string(ctx->http_services_backbone_port);
+	url = std::string("http://") + ctx->themis_url + ":" + std::to_string(ctx->http_services_backbone_port);
 
 	#else
 
-	url = std::string("https://") + ctx->themis_url + std::to_string(ctx->http_services_backbone_port);
+	url = std::string("https://") + ctx->themis_url + ":" + std::to_string(ctx->http_services_backbone_port);
 
 	#endif
 
-	return Launch_THEMIS_CLIENT(this);
-}
-
-void THEMIS_CLIENT::Delete() {}
-
-bool Launch_THEMIS_CLIENT(THEMIS_CLIENT *client) {
-	pb::THEMIS_CLIENT client_t;
-	bool return_value;
-
-	pb::Initialize_THEMIS_CLIENT(&client_t, client->url);
+	pb::Initialize_THEMIS_CLIENT(&client_t, url);
 
 	kible::themis::LaunchRequest request;
 	kible::themis::LaunchResponse response;
+
+	get_screen_width_height(&width, &height);
+	Set_Screen_Dim_KCONTEXT(ctx, (SCREEN_DIM) {
+		width,
+		width,
+		height});
+	
+	request.set_width(width);
+	request.set_height(height);
+	request.set_launchbackend(
+		kible::themis::LaunchBackend::LAUNCHBACKEND_WS);
 
 	return_value = pb::Launch_THEMIS_CLIENT(&client_t, &request,
 		&response);
@@ -33,13 +41,24 @@ bool Launch_THEMIS_CLIENT(THEMIS_CLIENT *client) {
 	return return_value;
 }
 
-bool Density_THEMIS_CLIENT(THEMIS_CLIENT *client,
+bool Density_THEMIS_CLIENT(KCONTEXT *ctx,
 	kible::themis::PixelDensity density) {
 	
 	pb::THEMIS_CLIENT client_t;
 	bool return_value;
+	std::string url;
 
-	pb::Initialize_THEMIS_CLIENT(&client_t, client->url);
+	#ifdef TESTING_BUILD
+
+	url = std::string("http://") + ctx->themis_url + ":" + std::to_string(ctx->http_services_backbone_port);
+
+	#else
+
+	url = std::string("https://") + ctx->themis_url + ":" + std::to_string(ctx->http_services_backbone_port);
+
+	#endif
+
+	pb::Initialize_THEMIS_CLIENT(&client_t, url);
 
 	kible::themis::DensityRequest request;
 	kible::themis::DensityResponse response;
