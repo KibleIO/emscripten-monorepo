@@ -1,20 +1,20 @@
-#ifndef VIDEO_SERVICE_H_
-#define VIDEO_SERVICE_H_
+#ifndef VIDEO_CLIENT_H_
+#define VIDEO_CLIENT_H_
 
 #include <SDL2/SDL.h>
 #include <emscripten.h>
 
 #include <thread>
+#include "../Rana_Core_Utils/controller/client/SERVICE_CLIENT.h"
 #include "../LIMITS.h"
-#include "../Rana_Core_Utils/Hermes/CLIENT.h"
 #include "../Rana_Core_Utils/Utilities/ASSERT.h"
 #include "../Rana_Core_Utils/Utilities/KCONTEXT.h"
 #include "../Rana_Core_Utils/Utilities/MOUSE.h"
 #include "../Rana_Core_Utils/Utilities/KEYBOARD.h"
 #include "../Rana_Core_Utils/Utilities/TIMER.h"
 #include "../../Broadway-H.264-decoder/src/Decoder.h"
-#include "MOUSE_SERVICE.h"
-#include "KEYBOARD_SERVICE.h"
+#include "MOUSE_CLIENT.h"
+#include "KEYBOARD_CLIENT.h"
 #include "../client/THEMIS_CLIENT.h"
 
 // god have mercy on us
@@ -29,10 +29,9 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-struct VIDEO_SERVICE {
+struct VIDEO_CLIENT : public SERVICE_CLIENT {
 	KCONTEXT *ctx;
 
-	CLIENT *c;
 	thread *main_loop;
 	volatile bool main_loop_running;
 	char nal_buffer[MAX_NAL_SIZE];
@@ -57,18 +56,17 @@ struct VIDEO_SERVICE {
 	bool ctrl_clicked;
 	bool relative_mode;
 
-	MOUSE_SERVICE *mouse_service;
-	KEYBOARD_SERVICE *keyboard_service;
+	SOCKET_CLIENT socket_client;
+
+	bool Initialize(KCONTEXT*, SERVICE_CLIENT_REGISTRY*) override;
+	void Delete() override;
 };
 
-bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *, KCONTEXT *, MOUSE_SERVICE *, KEYBOARD_SERVICE *);
-void Main_TCP_Loop_VIDEO_SERVICE(void *);
-void Main_UDP_Loop_VIDEO_SERVICE(VIDEO_SERVICE *);
-bool Connect_VIDEO_SERVICE(VIDEO_SERVICE *, CLIENT *, CLIENT *);
-void Get_Frame_VIDEO_SERVICE(VIDEO_SERVICE *, uint8_t *);
-bool Status_VIDEO_SERVICE(VIDEO_SERVICE *);
-bool Resize_VIDEO_SERVICE(VIDEO_SERVICE *, int, int);
-void Disconnect_VIDEO_SERVICE(VIDEO_SERVICE *);
-void Delete_VIDEO_SERVICE(VIDEO_SERVICE *);
+void Main_TCP_Loop_VIDEO_CLIENT(void *);
+void Main_UDP_Loop_VIDEO_CLIENT(VIDEO_CLIENT *);
+void Get_Frame_VIDEO_CLIENT(VIDEO_CLIENT *, uint8_t *);
+bool Status_VIDEO_CLIENT(VIDEO_CLIENT *);
+bool Resize_VIDEO_CLIENT(VIDEO_CLIENT *, int, int);
+void Disconnect_VIDEO_CLIENT(VIDEO_CLIENT *);
 
 #endif

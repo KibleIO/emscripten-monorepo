@@ -17,7 +17,10 @@ struct KCONTEXT{
 	bool screen_dim_changed;
 	std::string uuid;
 	std::string url;
-	std::string themis_api;
+	std::string themis_url;
+	int core_services_backbone;
+	int core_services_backbone_port;
+	int http_services_backbone_port;
 };
 
 void Initialize_KCONTEXT(KCONTEXT*);

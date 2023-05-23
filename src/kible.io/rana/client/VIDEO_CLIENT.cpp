@@ -1,7 +1,11 @@
-#include "VIDEO_SERVICE.h"
+#include "VIDEO_CLIENT.h"
+
+void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
+	std::cout << "received bytes " << buffer_size << std::endl;
+}
 
 static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData) {
-	VIDEO_SERVICE *video = (VIDEO_SERVICE*) userData;
+	VIDEO_CLIENT *video = (VIDEO_CLIENT*) userData;
 
 	/*
 	int width;
@@ -20,7 +24,7 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
 	return 0;
 }
 
-void Report_Resize_Function_VIDEO_SERVICE(VIDEO_SERVICE *video) {
+void Report_Resize_Function_VIDEO_CLIENT(VIDEO_CLIENT *video) {
 	int width;
 	int height;
 
@@ -66,7 +70,7 @@ void Report_Resize_Function_VIDEO_SERVICE(VIDEO_SERVICE *video) {
 	//}
 }
 
-void Actually_Resize_Window_VIDEO_SERVICE(VIDEO_SERVICE *video, int width, int height) {
+void Actually_Resize_Window_VIDEO_CLIENT(VIDEO_CLIENT *video, int width, int height) {
 	video->width = width;
 	video->height = height;
 
@@ -80,62 +84,70 @@ void Actually_Resize_Window_VIDEO_SERVICE(VIDEO_SERVICE *video, int width, int h
 		SDL_TEXTUREACCESS_STREAMING, video->width, video->height);
 }
 
-bool Initialize_VIDEO_SERVICE(VIDEO_SERVICE *video, KCONTEXT *ctx,
-	MOUSE_SERVICE *mouse_service, KEYBOARD_SERVICE *keyboard_service) {
-	
-	video->ctx = ctx;
-	video->main_loop = NULL;
-	video->main_loop_running = false;
-	video->mouse_service = mouse_service;
-	video->keyboard_service = keyboard_service;
-	video->mouse_count = 1;
-	video->keyboard_count = 1;
-	video->texture = NULL;
-	video->ctrl_clicked = false;
-	video->relative_mode = false;
+bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) {
+	ctx = ctx;
+	main_loop = NULL;
+	main_loop_running = false;
+	mouse_count = 1;
+	keyboard_count = 1;
+	texture = NULL;
+	ctrl_clicked = false;
+	relative_mode = false;
 
-	memset(video->nal_buffer, 0, MAX_NAL_SIZE);
+	memset(nal_buffer, 0, MAX_NAL_SIZE);
 
 	DEBUG(("H.264 Decoder API v%d.%d\n", broadwayGetMajorVersion(),
 		   broadwayGetMinorVersion()));
 
-	broadwayInit(&video->decoder, 0, 0, 0, 0, (void*) video);
-	video->byteStrmStart = broadwayCreateStream(&video->decoder, MAX_NAL_SIZE);
+	broadwayInit(&decoder, 0, 0, 0, 0, (void*) this);
+	byteStrmStart = broadwayCreateStream(&decoder, MAX_NAL_SIZE);
 
 	// Initialize SDL
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
 	// Create an SDL window and renderer
-	video->window = SDL_CreateWindow("Portal",
+	window = SDL_CreateWindow("Portal",
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800,
 		600, SDL_WINDOW_OPENGL);
 
-	video->renderer = SDL_CreateRenderer(video->window, -1, 0);
+	renderer = SDL_CreateRenderer(window, -1, 0);
 
-	if (video->renderer == NULL) {
+	if (renderer == NULL) {
 		printf("Failed to create renderer: %s\n", SDL_GetError());
 	}
 
-	Report_Resize_Function_VIDEO_SERVICE(video);
-	video->width = 800;
-	video->height = 600;
+	Report_Resize_Function_VIDEO_CLIENT(this);
+	width = 800;
+	height = 600;
+
+	if (!Initialize_SOCKET_CLIENT(&socket_client,
+		Recv_Callback_VIDEO_CLIENT, &registry->socket_client_registry,
+		ctx, this)) {
+		
+		return false;
+	}
 
 	emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW,
-		(void*) video, 0, Emscripten_HandleResize);
+		(void*) this, 0, Emscripten_HandleResize);
+	
+	emscripten_set_main_loop_arg(
+		[](void *arg) { Main_TCP_Loop_VIDEO_CLIENT(arg); }, this, 0, 0);
 	
 	return true;
 }
 
+void VIDEO_CLIENT::Delete() {}
+
 void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 	void *user_data) {
 
-	VIDEO_SERVICE *video = (VIDEO_SERVICE*) user_data;
+	VIDEO_CLIENT *video = (VIDEO_CLIENT*) user_data;
 	
 	if (video->decoder.decInfo.croppingFlag) {
 		if (video->decoder.decInfo.cropParams.cropOutWidth != video->width ||
 			video->decoder.decInfo.cropParams.cropOutHeight != video->height) {
 
-			Actually_Resize_Window_VIDEO_SERVICE(video,
+			Actually_Resize_Window_VIDEO_CLIENT(video,
 				video->decoder.decInfo.cropParams.cropOutWidth,
 				video->decoder.decInfo.cropParams.cropOutHeight);
 		}
@@ -143,7 +155,7 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 		if (video->decoder.decInfo.picWidth != video->width ||
 			video->decoder.decInfo.picHeight != video->height) {
 
-			Actually_Resize_Window_VIDEO_SERVICE(video,
+			Actually_Resize_Window_VIDEO_CLIENT(video,
 				video->decoder.decInfo.picWidth,
 				video->decoder.decInfo.picHeight);
 		}
@@ -214,7 +226,7 @@ extern void broadwayOnHeadersDecoded() { printf("header decoded\n"); }
 
 TIMER t;
 
-void Decode_Buffer_VIDEO_SERVICE(VIDEO_SERVICE *video, char *buffer, int size) {
+void Decode_Buffer_VIDEO_CLIENT(VIDEO_CLIENT *video, char *buffer, int size) {
 	video->decoder.streamStop = (u8 *)buffer + size;
 	video->decoder.decInput.pStream = (u8 *)buffer;
 	video->decoder.decInput.dataLen = size;
@@ -231,11 +243,11 @@ void Decode_Buffer_VIDEO_SERVICE(VIDEO_SERVICE *video, char *buffer, int size) {
 	} while (video->decoder.decInput.dataLen > 0);
 }
 
-void Main_TCP_Loop_VIDEO_SERVICE(void *arg/*VIDEO_SERVICE *video*/) {
+void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
 	//cout << "time: " << Stop_TIMER(&t) << endl;
 
 	//============== < 1ms
-	VIDEO_SERVICE *video = (VIDEO_SERVICE *)arg;
+	VIDEO_CLIENT *video = (VIDEO_CLIENT *)arg;
 
 	MOUSE_EVENT_T m_event;
 	KEYBOARD_EVENT_T k_event;
@@ -261,8 +273,8 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg/*VIDEO_SERVICE *video*/) {
 				}
 				m_event.clicked = false;
 				m_event.event_index = video->mouse_count++;
-				Send_CLIENT(video->mouse_service->c, (char *)&m_event,
-							sizeof(MOUSE_EVENT_T));
+				//Send_CLIENT(video->mouse_service->c, (char *)&m_event,
+				//			sizeof(MOUSE_EVENT_T));
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				m_event.x = event.button.x;
@@ -271,8 +283,8 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg/*VIDEO_SERVICE *video*/) {
 				m_event.state = 1;	// pressed
 				m_event.event_index = video->mouse_count++;
 				m_event.button = event.button.button;
-				Send_CLIENT(video->mouse_service->c, (char *)&m_event,
-							sizeof(MOUSE_EVENT_T));
+				//Send_CLIENT(video->mouse_service->c, (char *)&m_event,
+				//			sizeof(MOUSE_EVENT_T));
 				break;
 			case SDL_MOUSEBUTTONUP:
 				m_event.x = event.button.x;
@@ -281,8 +293,8 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg/*VIDEO_SERVICE *video*/) {
 				m_event.state = 0;	// released
 				m_event.event_index = video->mouse_count++;
 				m_event.button = event.button.button;
-				Send_CLIENT(video->mouse_service->c, (char *)&m_event,
-							sizeof(MOUSE_EVENT_T));
+				//Send_CLIENT(video->mouse_service->c, (char *)&m_event,
+				//			sizeof(MOUSE_EVENT_T));
 				break;
 			case SDL_MOUSEWHEEL:
 				if (video->mouse_count++ % 8 != 0) break;
@@ -293,9 +305,9 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg/*VIDEO_SERVICE *video*/) {
 				m_event.event_index = video->mouse_count++;
 				m_event.button = (event.wheel.preciseY > 0) ? 4 : 5;
 
-				Send_CLIENT(video->mouse_service->c,
-					(char*) &m_event,
-					sizeof(MOUSE_EVENT_T));
+				//Send_CLIENT(video->mouse_service->c,
+				//	(char*) &m_event,
+				//	sizeof(MOUSE_EVENT_T));
 
 				m_event.x = event.wheel.x;
 				m_event.y = event.wheel.y;
@@ -304,9 +316,9 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg/*VIDEO_SERVICE *video*/) {
 				m_event.event_index = video->mouse_count++;
 				m_event.button = (event.wheel.preciseY > 0) ? 4 : 5;
 
-				Send_CLIENT(video->mouse_service->c,
-					(char*) &m_event,
-					sizeof(MOUSE_EVENT_T));
+				//Send_CLIENT(video->mouse_service->c,
+				//	(char*) &m_event,
+				//	sizeof(MOUSE_EVENT_T));
 				break;
 			case SDL_KEYDOWN:
 				if (event.key.keysym.sym == SDLK_RCTRL ||
@@ -317,9 +329,9 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg/*VIDEO_SERVICE *video*/) {
 				k_event.code = event.key.keysym.sym;
 				k_event.value = 1;
 				k_event.event_index = video->keyboard_count++;
-				Send_CLIENT(video->keyboard_service->c,
-					(char*) &k_event,
-					sizeof(KEYBOARD_EVENT_T));
+				//Send_CLIENT(video->keyboard_service->c,
+				//	(char*) &k_event,
+				//	sizeof(KEYBOARD_EVENT_T));
 				break;
 			case SDL_KEYUP:
 				if (event.key.keysym.sym == SDLK_RCTRL ||
@@ -334,20 +346,20 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg/*VIDEO_SERVICE *video*/) {
 								(SDL_bool)video->relative_mode);
 							break;
 						case SDLK_2:
-							Density_THEMIS_CLIENT(video->ctx->themis_api,
-								kible::themis::PixelDensity::PIXELDENSITY_HIGH);
+							//Density_THEMIS_CLIENT(video->ctx->themis_api,
+							//	kible::themis::PixelDensity::PIXELDENSITY_HIGH);
 							break;
 						case SDLK_3:
-							Density_THEMIS_CLIENT(video->ctx->themis_api,
-								kible::themis::PixelDensity::PIXELDENSITY_MEDIUM);
+							//Density_THEMIS_CLIENT(video->ctx->themis_api,
+							//	kible::themis::PixelDensity::PIXELDENSITY_MEDIUM);
 							break;
 						case SDLK_4:
-							Density_THEMIS_CLIENT(video->ctx->themis_api,
-								kible::themis::PixelDensity::PIXELDENSITY_LOW);
+							//Density_THEMIS_CLIENT(video->ctx->themis_api,
+							//	kible::themis::PixelDensity::PIXELDENSITY_LOW);
 							break;
 						case SDLK_5:
-							Density_THEMIS_CLIENT(video->ctx->themis_api,
-								kible::themis::PixelDensity::PIXELDENSITY_PLACEBO);
+							//Density_THEMIS_CLIENT(video->ctx->themis_api,
+							//	kible::themis::PixelDensity::PIXELDENSITY_PLACEBO);
 							break;
 					}
 				}
@@ -355,26 +367,27 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg/*VIDEO_SERVICE *video*/) {
 				k_event.code = event.key.keysym.sym;
 				k_event.value = 0;
 				k_event.event_index = video->keyboard_count++;
-				Send_CLIENT(video->keyboard_service->c,
-					(char*) &k_event,
-					sizeof(KEYBOARD_EVENT_T));
+				//Send_CLIENT(video->keyboard_service->c,
+				//	(char*) &k_event,
+				//	sizeof(KEYBOARD_EVENT_T));
 				break;
 			case SDL_WINDOWEVENT:
 				if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-					Report_Resize_Function_VIDEO_SERVICE(video);
+					Report_Resize_Function_VIDEO_CLIENT(video);
 				}
 				break;
 			}
 		}
 
-		
+		/*
 		int size;
 		if (Receive_CLIENT(video->c, (char *)&size, sizeof(int)) &&
 			Receive_CLIENT(video->c, video->nal_buffer, size)) {
 			//============== < 5ms
-			Decode_Buffer_VIDEO_SERVICE(video, video->nal_buffer, size);
+			Decode_Buffer_VIDEO_CLIENT(video, video->nal_buffer, size);
 			//==============
 		}
+		*/
 		//==============
 		
 		//============== < 10ms && < 70ms
@@ -386,7 +399,7 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg/*VIDEO_SERVICE *video*/) {
 			cout << "outer time: " << Stop_TIMER(&t) << " " << getTime() << endl;
 			Start_TIMER(&t);
 			//============== < 5ms
-			Decode_Buffer_VIDEO_SERVICE(video, video->nal_buffer, size);
+			Decode_Buffer_VIDEO_CLIENT(video, video->nal_buffer, size);
 			cout << "render time: " << Stop_TIMER(&t) << " " << getTime() << endl;
 			//==============
 		}
@@ -398,44 +411,15 @@ void Main_TCP_Loop_VIDEO_SERVICE(void *arg/*VIDEO_SERVICE *video*/) {
 	//Start_TIMER(&t);
 }
 
-bool Resize_VIDEO_SERVICE(VIDEO_SERVICE *video, int width, int height) {
+bool Resize_VIDEO_CLIENT(VIDEO_CLIENT *video, int width, int height) {
 	return true;
 }
 
-bool Status_VIDEO_SERVICE(VIDEO_SERVICE *video) {
+bool Status_VIDEO_CLIENT(VIDEO_CLIENT *video) {
 	return video->main_loop_running;
 }
 
-bool Connect_VIDEO_SERVICE(VIDEO_SERVICE *video, CLIENT *video_init,
-						   CLIENT *c) {
-	/*screen_dim_scaled.sw *= SCALE_RATIO;
-	screen_dim_scaled.bw *= SCALE_RATIO;
-	screen_dim_scaled.h *= SCALE_RATIO;*/
-	video->c = c;
-	int size;
-
-	ASSERT_E_R(video_init != NULL, "video_init is NULL", video->ctx);
-	ASSERT_E_R(video->c != NULL, "Client is NULL", video->ctx);
-
-	ASSERT_E_R(Receive_CLIENT(video_init, (char *)&size, sizeof(int)),
-			   "Failed to receive headers", video->ctx);
-	ASSERT_E_R(Receive_CLIENT(video_init, video->nal_buffer, size),
-			   "Failed to receive headers", video->ctx);
-	video->main_loop_running = true;
-
-	//Main_TCP_Loop_VIDEO_SERVICE(video);
-	//video->main_loop = new thread(render_thread, video);
-	emscripten_set_main_loop_arg(
-		[](void *arg) { Main_TCP_Loop_VIDEO_SERVICE(arg); }, video, 0, 1);
-	 //
-	 //while (true) {
-	//	Sleep_Milli(1000);
-	//}
-
-	return true;
-}
-
-void Disconnect_VIDEO_SERVICE(VIDEO_SERVICE *video) {
+void Disconnect_VIDEO_CLIENT(VIDEO_CLIENT *video) {
 	video->main_loop_running = false;
 	if (video->main_loop != NULL) {
 		video->main_loop->join();
@@ -443,5 +427,3 @@ void Disconnect_VIDEO_SERVICE(VIDEO_SERVICE *video) {
 		video->main_loop = NULL;
 	}
 }
-
-void Delete_VIDEO_SERVICE(VIDEO_SERVICE *video) {}

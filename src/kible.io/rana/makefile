@@ -3,7 +3,7 @@
 CC = em++ -O3 -sDISABLE_EXCEPTION_CATCHING=1 -sUSE_SDL=2 -sUSE_PTHREADS -pthread
 BC = index.bc
 EXEC = index.js
-SOURCES = $(wildcard *.cpp) $(wildcard */*.cpp) $(wildcard */*/*.cpp) $(wildcard */*/*/*.cpp) $(wildcard ../gen/*/*.cpp)
+SOURCES = $(wildcard *.cpp) $(wildcard */*.cpp) $(wildcard */*/*.cpp) $(wildcard */*/*/*.cpp) $(wildcard */*/*/*/*.cpp) $(wildcard ../gen/*/*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
 CC_BUILD_FLAGS = -I../protolib -I../gen

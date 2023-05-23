@@ -12,20 +12,38 @@ int main() {
 
 	Initialize_KCONTEXT(&ctx);
 
-	ASSERT_E_R((Initialize_RANA_EXT(&rana_ext, &ctx)),
-			   "failed to initialize rana_ext", &ctx);
+	#ifdef TESTING_BUILD
 
-	if (!Connect_To_Themis_RANA_EXT(&rana_ext)) {
-		Disconnect_From_Themis_RANA_EXT(&rana_ext, false);
+	ctx.core_services_backbone_port = THEMIS_PORT;
+	ctx.http_services_backbone_port = THEMIS_PORT_HTTP;
 
-		LOG_INFO_CTX(&ctx) {
-			ADD_STR_LOG("message", "failed to connect to Themis");
+	ctx.themis_url = "localhost";
+
+	#else
+
+	ctx.core_services_backbone_port = 443;
+	ctx.http_services_backbone_port = 443;
+	if (!Themis_EDGE_CLIENT(std::string("https://") + rana_ext->ctx->url,
+		rana_ext->ctx->uuid, &ctx.themis_url)) {
+		
+		LOG_ERROR_CTX(rana_ext->ctx) {
+			ADD_STR_LOG("message", "Signin failed.");
+			ADD_STR_LOG("error", "Couldn't query for edge server");
 		}
 
-		return 0;
+		cout << "failed to query edge" << endl;
+		return false;
 	}
 
-	LOG_INFO_CTX(&ctx) { ADD_STR_LOG("message", "clean exit"); }
+	std::string delimiter = "alienhub.xyz";
+	ctx.themis_url = ctx.themis_url.substr(0, ctx.themis_url.find(delimiter)) +
+		rana_ext->ctx->url + ctx.themis_url.substr(
+		ctx.themis_url.find(delimiter) + delimiter.length());
+
+	#endif
+
+	ASSERT_E_R((Initialize_RANA_EXT(&rana_ext, &ctx)),
+			   "failed to initialize rana_ext", &ctx);
 
 	return 0;
 }

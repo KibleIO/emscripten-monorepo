@@ -1,14 +1,14 @@
-#ifndef AUDIO_SERVICE_H_
-#define AUDIO_SERVICE_H_
+#ifndef AUDIO_CLIENT_H_
+#define AUDIO_CLIENT_H_
 
 #include <SDL2/SDL.h>
 
 #include <thread>
 
-#include "../Rana_Core_Utils/Hermes/CLIENT.h"
 #include "../Rana_Core_Utils/Utilities/ASSERT.h"
 #include "../Rana_Core_Utils/Utilities/KCONTEXT.h"
 #include "../../opus/include/opus.h"
+#include "../Rana_Core_Utils/controller/client/SERVICE_CLIENT.h"
 
 #define FRAME_SIZE_MS 20
 #define SAMPLE_RATE 48000  // Sample rate in Hz
@@ -20,20 +20,21 @@
 #define OPUS_HEAD_SIZE 385
 #define MAX_NAL_SIZE1 2000
 
-struct AUDIO_SERVICE {
+struct AUDIO_CLIENT : public SERVICE_CLIENT {
 	KCONTEXT *ctx;
-	CLIENT *c;
 	thread *main_loop;
 	volatile bool main_loop_running;
 	char nal_buffer[MAX_NAL_SIZE1];
 	opus_int16 pcm[FRAME_SIZE * CHANNELS * sizeof(opus_int16)];
 	OpusDecoder *decoder;
 	SDL_AudioDeviceID audioDevice;
+
+	SOCKET_CLIENT socket_client;
+
+	bool Initialize(KCONTEXT*, SERVICE_CLIENT_REGISTRY*) override;
+	void Delete() override;
 };
 
-bool Initialize_AUDIO_SERVICE(AUDIO_SERVICE *, KCONTEXT *);
-bool Connect_AUDIO_SERVICE(AUDIO_SERVICE *, CLIENT *);
-void Disconnect_AUDIO_SERVICE(AUDIO_SERVICE *);
-void Delete_AUDIO_SERVICE(AUDIO_SERVICE *);
+void Main_TCP_Loop_AUDIO_CLIENT(AUDIO_CLIENT*);
 
 #endif

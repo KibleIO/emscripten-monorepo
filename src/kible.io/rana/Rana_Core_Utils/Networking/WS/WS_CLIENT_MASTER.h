@@ -12,6 +12,7 @@
 #include "../../Utilities/KCONTEXT.h"
 #include "../../Utilities/CONCURRENT_QUEUE.h"
 #include "../../Utilities/UTILS.h"
+#include "../base/client/RECEIVE_CALLBACK_SOCKET_CLIENT.h"
 
 #define WEB_SOCKET_POOL_SIZE 100
 #define MAX_WEBSOCKET_PACKET_SIZE 10000
@@ -26,15 +27,20 @@ struct WEBSOCKET_ELEMENT {
 	uint8_t*	bytes;
 };
 
+struct WEBSOCKET_CONSUMER {
+	void *user_ptr;
+	Receive_Callback_SOCKET_CLIENT callback;
+};
+
 struct WS_CLIENT_MASTER {
 	char name[100];
 	volatile uint8_t	accept;
 	uint8_t host_count;
 	KCONTEXT *ctx;
 
-	Queue<WEBSOCKET_ELEMENT*>	*pool;
-	Queue<WEBSOCKET_ELEMENT*>	*active_read[MAX_HOSTS];
 	thread *websocket_thread;
+
+	WEBSOCKET_CONSUMER *consumers[MAX_HOSTS];
 	
 	#ifdef __EMSCRIPTEN__
 
@@ -43,17 +49,14 @@ struct WS_CLIENT_MASTER {
 	#endif
 };
 
-bool Initialize_WS_CLIENT_MASTER(WS_CLIENT_MASTER*, KCONTEXT *ctx, int, char*);
+bool Initialize_WS_CLIENT_MASTER(WS_CLIENT_MASTER*, KCONTEXT*, int, char*);
 void Set_Name_WS_CLIENT_MASTER(WS_CLIENT_MASTER*, char*);
 bool Set_Recv_Timeout_WS_CLIENT_MASTER(WS_CLIENT_MASTER*, int, int);
 bool Set_High_Priority_WS_CLIENT_MASTER(WS_CLIENT_MASTER*);
 void Delete_WS_CLIENT_MASTER(WS_CLIENT_MASTER*);
 
 bool Send_WS_CLIENT_MASTER(WS_CLIENT_MASTER*, uint8_t*, uint32_t, uint8_t);
-bool Receive_WS_CLIENT_MASTER(WS_CLIENT_MASTER*, uint8_t*, int32_t, int32_t,
-	uint8_t);
-int Receive_Unsafe_WS_CLIENT_MASTER(WS_CLIENT_MASTER*, uint8_t*, int32_t,
-	uint8_t);
-uint8_t Register_Vhost_WS_CLIENT_MASTER(WS_CLIENT_MASTER*);
+uint8_t Register_Vhost_WS_CLIENT_MASTER(WS_CLIENT_MASTER*,
+	Receive_Callback_SOCKET_CLIENT, void*);
 
 #endif

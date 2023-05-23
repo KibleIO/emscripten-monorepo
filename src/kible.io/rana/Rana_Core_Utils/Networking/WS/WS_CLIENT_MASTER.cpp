@@ -49,48 +49,12 @@ EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 		return EM_FALSE;
 	}
 
-	if (client->active_read[int(websocketEvent->data[0])]->size() >=
-		MAX_ACCUMULATED_FRAMES) {
-
-		//a reader is getting lazy... drop this packet
-		//log_err("a reader got lazy, dropping this packet.");
-		if (int(websocketEvent->data[0]) == 3) {
-			cout << "HEYYYYYEYEYEYYEYEYEYEYEYEY " << client->active_read[int(websocketEvent->data[0])]->size() << " " << getTime() << endl;
-		}
-		return EM_FALSE;
+	if (client->consumers[int(websocketEvent->data[0])] != NULL) {
+		client->consumers[int(websocketEvent->data[0])]->callback(
+			client->consumers[int(websocketEvent->data[0])]->user_ptr,
+			(char*)websocketEvent->data + 1,
+			len - 1);
 	}
-
-	while (client->pool->size() <= 0 &&
-		time_out < WEB_SOCKET_TIME_OUT) {
-
-		time_out++;
-		Sleep_Milli(WEB_SOCKET_SLEEP_TIME);
-	}
-	if (time_out >= WEB_SOCKET_TIME_OUT) {
-		return EM_FALSE;
-	}
-
-	client->pool->pop(temp);
-
-	/*
-	if (len > MAX_WEBSOCKET_PACKET_SIZE) {
-		cout << "truncate packet " << len << endl;
-		//log_err("received large packet. truncated.");
-		len = MAX_WEBSOCKET_PACKET_SIZE;
-	}
-	*/
-
-	temp->bytes = new uint8_t[len - 1];
-
-	copy((uint8_t*)websocketEvent->data + 1,
-		((uint8_t*)websocketEvent->data + 1) + (len - 1), temp->bytes);
-	temp->size = len - 1;
-
-	client->active_read[int(websocketEvent->data[0])]->push(temp);
-
-	//if (int(websocketEvent->data[0]) == 3) {
-	//	cout << "finished processing " << getTime() << endl;
-	//}
 
 	return EM_TRUE;
 }
@@ -105,19 +69,6 @@ bool Initialize_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client, KCONTEXT *ctx,
 	client->ctx = ctx;
 	client->host_count = 0;
 	client->accept = false;
-	client->pool = new Queue<WEBSOCKET_ELEMENT*>;
-
-	for (int i = 0; i < MAX_HOSTS; i++) {
-		client->active_read[i] = new Queue<WEBSOCKET_ELEMENT*>;
-	}
-
-	for (int i = 0; i < WEB_SOCKET_POOL_SIZE; i++) {
-		temp		= new WEBSOCKET_ELEMENT;
-		temp->size	= -1;
-		//temp->bytes	= new uint8_t[MAX_WEBSOCKET_PACKET_SIZE];
-
-		client->pool->push(temp);
-	}
 
 	Set_Name_WS_CLIENT_MASTER(client, "unknown");
 
@@ -183,75 +134,18 @@ bool Send_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 	return true;
 }
 
+uint8_t Register_Vhost_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
+	Receive_Callback_SOCKET_CLIENT callback, void *user_ptr) {
 
-bool Receive_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
-	uint8_t* bytes, int32_t size, int32_t recv_timeout,
-	uint8_t client_index) {
-	
-	WEBSOCKET_ELEMENT *temp = NULL;
-	uint32_t time_out = 0;
-	uint8_t return_val;
-
-	while (client->active_read[client_index]->size() <= 0 &&
-		time_out < recv_timeout &&
-		client->accept) {
-		time_out++;
-		Sleep_Milli(WS_SLEEP_TIME);
-	}
-	if (time_out >= recv_timeout || !client->accept) {
-		return false;
-	}
-	
-	client->active_read[client_index]->pop(temp);
-
-	copy(temp->bytes, temp->bytes + size, bytes);
-	return_val = size == temp->size;
-	temp->size = -1;
-	delete [] temp->bytes;
-
-	client->pool->push(temp);
-	return return_val;
-}
-
-int Receive_Unsafe_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
-	uint8_t* bytes, int32_t recv_timeout,
-	uint8_t client_index) {
-
-	WEBSOCKET_ELEMENT *temp = NULL;
-	uint32_t time_out = 0;
-	uint8_t return_val;
-	int32_t sleep = recv_timeout / WEB_SOCKET_TIME_OUT;
-
-	while (client->active_read[client_index]->size() <= 0 &&
-		time_out < WEB_SOCKET_TIME_OUT &&
-		client->accept) {
-
-		time_out++;
-		Sleep_Milli(sleep);
-	}
-	if (time_out >= WEB_SOCKET_TIME_OUT ||
-		!client->accept) {
-
-		return false;
-	}
-
-	client->active_read[client_index]->pop(temp);
-
-	copy(temp->bytes, temp->bytes + temp->size, bytes);
-	return_val = temp->size;
-	temp->size = -1;
-	delete [] temp->bytes;
-
-	client->pool->push(temp);
-
-	return return_val;
-}
-
-uint8_t Register_Vhost_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client) {
 	if (client->host_count >= MAX_HOSTS) {
 		//log_err("Too many hosts.");
 		return -1;
 	}
+
+	client->consumers[client->host_count] = new WEBSOCKET_CONSUMER;
+	client->consumers[client->host_count]->user_ptr = user_ptr;
+	client->consumers[client->host_count]->callback = callback;
+
 	return client->host_count++;
 }
 
