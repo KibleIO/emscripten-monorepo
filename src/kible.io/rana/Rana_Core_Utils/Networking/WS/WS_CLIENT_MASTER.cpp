@@ -49,7 +49,11 @@ EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 		return EM_FALSE;
 	}
 
+	std::cout << "On_Message_WS_CLIENT_MASTER3" << std::endl;
+
 	if (client->consumers[int(websocketEvent->data[0])] != NULL) {
+		std::cout << "On_Message_WS_CLIENT_MASTER51212 " << int(websocketEvent->data[0]) << " " << len << " " << std::endl;
+		std::cout << "On_Message_WS_CLIENT_MASTER5 " << int(websocketEvent->data[0]) << " " << len << " " << (void*) client->consumers[int(websocketEvent->data[0])] << std::endl;
 		client->consumers[int(websocketEvent->data[0])]->callback(
 			client->consumers[int(websocketEvent->data[0])]->user_ptr,
 			(char*)websocketEvent->data + 1,
@@ -63,14 +67,16 @@ EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 
 bool Initialize_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client, KCONTEXT *ctx,
 	int port, char *ip) {
-
-	WEBSOCKET_ELEMENT *temp;
 	
 	client->ctx = ctx;
 	client->host_count = 0;
 	client->accept = false;
 
 	Set_Name_WS_CLIENT_MASTER(client, "unknown");
+
+	for (int i = 0; i < MAX_HOSTS; i++) {
+		client->consumers[i] = NULL;
+	}
 
 	#ifdef __EMSCRIPTEN__
 
