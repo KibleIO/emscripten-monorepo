@@ -1,7 +1,32 @@
 #include "VIDEO_CLIENT.h"
+#include "komihash.h"
 
 void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
-	std::cout << "received bytes " << buffer_size << std::endl;
+	/*
+	if (buffer_size == 0) {
+		return;
+	}
+
+	std::cout << "welp, in Recv_Callback_VIDEO_CLIENT" << std::endl;
+
+
+	
+
+	std::cout << "pushed " << buffer_size << std::endl;
+	*/
+
+	VIDEO_CLIENT *client = (VIDEO_CLIENT*) user_ptr;
+	VIDEO_ELEMENT *element = new VIDEO_ELEMENT;
+
+	element->bytes = new uint8_t[buffer_size];
+	element->size = buffer_size;
+
+	memcpy(element->bytes, buffer, buffer_size);
+
+	//delete [] element->bytes;
+	//delete element;
+
+	client->pool->push(element);
 }
 
 static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData) {
@@ -22,52 +47,6 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
 	SDL_PushEvent(&event);
 
 	return 0;
-}
-
-void Report_Resize_Function_VIDEO_CLIENT(VIDEO_CLIENT *video) {
-	int width;
-	int height;
-
-	get_screen_width_height(&width, &height);
-
-	bool changed = false;
-
-	if (width < MINIMUM_WIDTH) {
-		width = MINIMUM_WIDTH;
-		changed = true;
-	}
-
-	if (height < MINIMUM_HEIGHT) {
-		height = MINIMUM_HEIGHT;
-		changed = true;
-	}
-
-	if (width > MAXIMUM_WIDTH) {
-		width = MAXIMUM_WIDTH;
-		changed = true;
-	}
-
-	if (height > MAXIMUM_HEIGHT) {
-		height = MAXIMUM_HEIGHT;
-		changed = true;
-	}
-
-	if (width % 32 != 0) {
-		width = (width / 32) * 32;
-		changed = true;
-	}
-
-	if (height % 32 != 0) {
-		height = (height / 32) * 32;
-		changed = true;
-	}
-
-	//if (changed) {
-		Set_Screen_Dim_KCONTEXT(video->ctx, (SCREEN_DIM) {
-		width,
-		width,
-		height});
-	//}
 }
 
 void Actually_Resize_Window_VIDEO_CLIENT(VIDEO_CLIENT *video, int width, int height) {
@@ -93,22 +72,23 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 	texture = NULL;
 	ctrl_clicked = false;
 	relative_mode = false;
+	pool = new Queue<VIDEO_ELEMENT*>;
 
-	memset(nal_buffer, 0, MAX_NAL_SIZE);
+	//memset(nal_buffer, 0, MAX_NAL_SIZE);
 
 	DEBUG(("H.264 Decoder API v%d.%d\n", broadwayGetMajorVersion(),
 		   broadwayGetMinorVersion()));
 
 	broadwayInit(&decoder, 0, 0, 0, 0, (void*) this);
-	byteStrmStart = broadwayCreateStream(&decoder, MAX_NAL_SIZE);
+	byteStrmStart = broadwayCreateStream(&decoder, 1920*1080*4);
 
 	// Initialize SDL
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
 	// Create an SDL window and renderer
 	window = SDL_CreateWindow("Portal",
-		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800,
-		600, SDL_WINDOW_OPENGL);
+		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+		ctx->screen_dim.bw, ctx->screen_dim.h, SDL_WINDOW_OPENGL);
 
 	renderer = SDL_CreateRenderer(window, -1, 0);
 
@@ -116,9 +96,8 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 		printf("Failed to create renderer: %s\n", SDL_GetError());
 	}
 
-	Report_Resize_Function_VIDEO_CLIENT(this);
-	width = 800;
-	height = 600;
+	Actually_Resize_Window_VIDEO_CLIENT(this, ctx->screen_dim.bw,
+		ctx->screen_dim.h);
 
 	if (!Initialize_SOCKET_CLIENT(&socket_client,
 		Recv_Callback_VIDEO_CLIENT, &registry->socket_client_registry,
@@ -143,6 +122,7 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 
 	VIDEO_CLIENT *video = (VIDEO_CLIENT*) user_data;
 	
+	/*
 	if (video->decoder.decInfo.croppingFlag) {
 		if (video->decoder.decInfo.cropParams.cropOutWidth != video->width ||
 			video->decoder.decInfo.cropParams.cropOutHeight != video->height) {
@@ -214,12 +194,15 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 	// Render the texture to the screen
 	SDL_RenderPresent(video->renderer);
 	// cout << "before" << endl;
+	*/
 }
 
 extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height,
 	void *user_data) {
 	
-	yuv_to_pixels(buffer, width, height, user_data);
+	std::cout << "in broadwayOnPictureDecoded new" << std::endl;
+
+	//yuv_to_pixels(buffer, width, height, user_data);
 }
 
 extern void broadwayOnHeadersDecoded() { printf("header decoded\n"); }
@@ -227,6 +210,9 @@ extern void broadwayOnHeadersDecoded() { printf("header decoded\n"); }
 TIMER t;
 
 void Decode_Buffer_VIDEO_CLIENT(VIDEO_CLIENT *video, char *buffer, int size) {
+
+	std::cout << "in Decode_Buffer_VIDEO_CLIENT" << std::endl;
+
 	video->decoder.streamStop = (u8 *)buffer + size;
 	video->decoder.decInput.pStream = (u8 *)buffer;
 	video->decoder.decInput.dataLen = size;
@@ -237,10 +223,14 @@ void Decode_Buffer_VIDEO_CLIENT(VIDEO_CLIENT *video, char *buffer, int size) {
 	u32 i = 0;
 	do {
 		u8 *start = video->decoder.decInput.pStream;
+		std::cout << "starting Decode_Buffer_VIDEO_CLIENT" << std::endl;
 		u32 ret = broadwayDecode(&video->decoder);
+		std::cout << "ending Decode_Buffer_VIDEO_CLIENT" << std::endl;
 		//printf("Decoded Unit #%d, Size: %d, Result: %d\n", i++,
 		//	   (video->decoder.decInput.pStream - start), ret);
 	} while (video->decoder.decInput.dataLen > 0);
+
+	std::cout << "super ending" << std::endl;
 }
 
 void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
@@ -251,10 +241,13 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
 
 	MOUSE_EVENT_T m_event;
 	KEYBOARD_EVENT_T k_event;
+	VIDEO_ELEMENT *element;
 
 	int temp_width;
 	int temp_height;
 	//TIMER t;
+
+	//std::cout << "starting loop" << std::endl;
 
 	//while (video->main_loop_running) {
 		//cout << "starting main loop: " << getTime() << endl;
@@ -373,11 +366,53 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
 				break;
 			case SDL_WINDOWEVENT:
 				if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-					Report_Resize_Function_VIDEO_CLIENT(video);
+					//Report_Resize_Function_VIDEO_CLIENT(video);
 				}
 				break;
 			}
 		}
+
+		if (video->pool->size() > 0) {
+			video->pool->pop(element);
+
+			//uint64_t HashVal = komihash( (char*) element->bytes, element->size, 0);
+
+			//std::cout << "poped " << element->size << " " << video->pool->size() << " " << HashVal << std::endl;
+			//Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
+
+
+			//memcpy(video->nal_buffer, element->bytes, element->size);
+
+			Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
+
+			//std::cout << "ok?!?!" << std::endl;
+
+			delete [] element->bytes;
+			delete element;
+		}
+
+		/*
+		if (video->pool->size() > 0) {
+			video->pool->pop(element);
+
+			uint64_t HashVal = komihash( (char*) element->bytes, element->size, 0);
+
+			//std::cout << "poped " << element->size << " " << video->pool->size() << " " << HashVal << std::endl;
+			//Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
+
+
+			//memcpy(video->nal_buffer, element->bytes, element->size);
+
+			//Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
+
+			//std::cout << "ok?!?!" << std::endl;
+
+			delete [] element->bytes;
+			delete element;
+		}
+
+		//std::cout << "loop has come to an end" << std::endl;
+		*/
 
 		/*
 		int size;

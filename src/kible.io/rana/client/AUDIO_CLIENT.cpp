@@ -1,7 +1,7 @@
 #include "AUDIO_CLIENT.h"
 
 void Recv_Callback_AUDIO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
-	std::cout << "received bytes " << buffer_size << std::endl;
+	//std::cout << "received bytes " << buffer_size << std::endl;
 }
 
 bool AUDIO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) {

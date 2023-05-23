@@ -14,6 +14,11 @@
 using namespace std;
 
 #define MAX_COOKIE_SIZE 256
+#define MINIMUM_WIDTH 480
+#define MINIMUM_HEIGHT 480
+
+#define MAXIMUM_WIDTH 1920
+#define MAXIMUM_HEIGHT 1080
 
 void Sleep_Milli(unsigned int milli);
 
