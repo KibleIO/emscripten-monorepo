@@ -4,7 +4,9 @@
 #include <emscripten/fetch.h>
 #include <stdio.h>
 #include <string.h>
+#include <iostream>
 
+#define HTTP_SUCCESS_STATUS 200
 #define MAX_HTTP_RESPONSE_SIZE 256
 #define HTTP_TIMEOUT 100
 #define HTTP_WAIT_MS 100
@@ -17,7 +19,11 @@ struct HTTP_SYNC_OBJ {
 	char *output;
 };
 
+typedef void (*HTTP_Request_Callback)(struct emscripten_fetch_t *fetch);
+
 bool HTTP_Request(char*, char*, char*, char*);
 bool HTTP_Request_With_Header(char*, char*, char*, char*, const char**);
+void HTTP_Request(char*, char*, HTTP_Request_Callback, void*);
+void HTTP_Request(char*, char*);
 
 #endif

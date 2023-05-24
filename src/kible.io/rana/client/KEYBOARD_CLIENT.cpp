@@ -17,3 +17,8 @@ bool KEYBOARD_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registr
 
 void KEYBOARD_CLIENT::Delete() {
 }
+
+void Send_Event_KEYBOARD_CLIENT(KEYBOARD_CLIENT *client, KEYBOARD_EVENT_T *event) {
+	Send_SOCKET_CLIENT(&client->socket_client, (char*) event,
+		sizeof(KEYBOARD_EVENT_T));
+}

@@ -1,7 +1,22 @@
 #include "AUDIO_CLIENT.h"
 
 void Recv_Callback_AUDIO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
-	//std::cout << "received bytes " << buffer_size << std::endl;
+	AUDIO_CLIENT *audio = (AUDIO_CLIENT*) user_ptr;
+
+	if (buffer_size == 11) {
+		return;
+	}
+
+	int num_samples = opus_decode(audio->decoder, (uint8_t *)buffer + 8,
+		((int *)buffer)[1], audio->pcm, FRAME_SIZE, 0);
+	if (num_samples < 0) {
+		fprintf(stderr, "opus_decode error: %s\n",
+				opus_strerror(num_samples));
+		return;
+	}
+
+	SDL_QueueAudio(audio->audioDevice, audio->pcm,
+		num_samples * CHANNELS * sizeof(opus_int16));
 }
 
 bool AUDIO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) {
@@ -48,49 +63,11 @@ bool AUDIO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 
 	SDL_PauseAudioDevice(audioDevice, 0);
 
-	main_loop_running = true;
-
-	//main_loop = new thread(Main_TCP_Loop_AUDIO_CLIENT, this);
-
 	return true;
 }
 
 void AUDIO_CLIENT::Delete() {
-	/*
-	main_loop_running = false;
-	if (main_loop != NULL) {
-		main_loop->join();
-		delete main_loop;
-		main_loop = NULL;
-	}
-	*/
 	opus_decoder_destroy(decoder);
 	SDL_CloseAudioDevice(audioDevice);
 	SDL_Quit();
-}
-
-void Main_TCP_Loop_AUDIO_CLIENT(AUDIO_CLIENT *audio) {
-	int size;
-	while (audio->main_loop_running) {
-		Sleep_Milli(1000);
-		/*
-		if (Receive_CLIENT(audio->c, (char *)&size, sizeof(int)) &&
-			Receive_CLIENT(audio->c, audio->nal_buffer, size)) {
-			if (size == 11) {
-				continue;
-			}
-			int num_samples = opus_decode(
-				audio->decoder, (uint8_t *)audio->nal_buffer + 8,
-				((int *)audio->nal_buffer)[1], audio->pcm, FRAME_SIZE, 0);
-			if (num_samples < 0) {
-				fprintf(stderr, "opus_decode error: %s\n",
-						opus_strerror(num_samples));
-				continue;
-			}
-
-			SDL_QueueAudio(audio->audioDevice, audio->pcm,
-						   num_samples * CHANNELS * sizeof(opus_int16));
-		}
-		*/
-	}
 }

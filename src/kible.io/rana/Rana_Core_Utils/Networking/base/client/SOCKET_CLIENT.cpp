@@ -3,9 +3,6 @@
 bool Initialize_SOCKET_CLIENT(SOCKET_CLIENT *client,
 	Receive_Callback_SOCKET_CLIENT callback,
 	SOCKET_CLIENT_REGISTRY *registry, KCONTEXT *ctx, void *user_ptr) {
-//bool Initialize_SOCKET_CLIENT(SOCKET_CLIENT *client,
-//	Receive_Callback_SOCKET_CLIENT callback,
-//	WS_CLIENT_MASTER *ws_client_master, KCONTEXT *ctx, void *user_ptr) {
 
 	client->type = ctx->core_services_backbone;
 

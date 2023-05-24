@@ -24,6 +24,69 @@ void HTTP_Failure(emscripten_fetch_t *fetch) {
 	sync_obj->success = false;
 }
 
+void HTTP_Success1(emscripten_fetch_t *fetch) {
+	/*
+	int characters_to_copy = fetch->numBytes;
+	HTTP_SYNC_OBJ *sync_obj = (HTTP_SYNC_OBJ*) fetch->userData;
+
+	if (characters_to_copy > MAX_HTTP_RESPONSE_SIZE) {
+		characters_to_copy = MAX_HTTP_RESPONSE_SIZE;
+	}
+
+	strncpy(sync_obj->output, fetch->data, characters_to_copy);
+  	sync_obj->output[MAX_HTTP_RESPONSE_SIZE - 1] = '\0';
+
+	sync_obj->loop_control = false;
+	sync_obj->success = true;
+	*/
+
+	emscripten_fetch_close(fetch);
+}
+
+void HTTP_Failure1(emscripten_fetch_t *fetch) {
+	
+	HTTP_SYNC_OBJ *sync_obj = (HTTP_SYNC_OBJ*) fetch->userData;
+	
+	std::cout << "in failure " << (void*) fetch->userData << std::endl;
+	sync_obj->loop_control = false;
+	//sync_obj->success = false;
+	
+	
+
+	emscripten_fetch_close(fetch);
+}
+
+void HTTP_Request(char *url, char *data, HTTP_Request_Callback callback,
+	void *user_ptr) {
+	
+	emscripten_fetch_attr_t attr;
+	emscripten_fetch_attr_init(&attr);
+	strcpy(attr.requestMethod, "POST");
+	attr.attributes = EMSCRIPTEN_FETCH_REPLACE |
+		EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+	attr.onsuccess = callback;
+	attr.onerror = callback;
+	attr.userData = user_ptr;
+	attr.requestData = data;
+	attr.requestDataSize = strlen(attr.requestData);
+	attr.requestHeaders = JSON_CONTENT_TYPE;
+
+	emscripten_fetch(&attr, url);
+}
+
+void HTTP_Request(char *url, char *data) {
+	emscripten_fetch_attr_t attr;
+	emscripten_fetch_attr_init(&attr);
+	strcpy(attr.requestMethod, "POST");
+	attr.attributes = EMSCRIPTEN_FETCH_REPLACE |
+		EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+	attr.requestData = data;
+	attr.requestDataSize = strlen(attr.requestData);
+	attr.requestHeaders = JSON_CONTENT_TYPE;
+
+	emscripten_fetch(&attr, url);
+}
+
 bool HTTP_Request(char *url, char *type, char *data, char *output) {
 	return HTTP_Request_With_Header(url, type, data, output,
 		JSON_CONTENT_TYPE);

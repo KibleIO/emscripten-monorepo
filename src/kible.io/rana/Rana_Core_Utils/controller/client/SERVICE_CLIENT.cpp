@@ -39,5 +39,5 @@ void Delete_SERVICE_CLIENT_REGISTRY(SERVICE_CLIENT_REGISTRY *registry) {
 		}
 	}
 
-	//Delete_SOCKET_CLIENT_REGISTRY(&registry->socket_client_registry);
+	Delete_SOCKET_CLIENT_REGISTRY(registry->socket_client_registry);
 }

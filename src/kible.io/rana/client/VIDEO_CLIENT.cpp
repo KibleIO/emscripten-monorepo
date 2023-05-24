@@ -1,16 +1,10 @@
 #include "VIDEO_CLIENT.h"
 
 void Decode_Buffer_VIDEO_CLIENT(VIDEO_CLIENT *video, char *buffer, int size) {
-
-	//std::cout << "in Decode_Buffer_VIDEO_CLIENT" << std::endl;
-
 	video->decoder.streamStop = (u8 *)buffer + size;
 	video->decoder.decInput.pStream = (u8 *)buffer;
 	video->decoder.decInput.dataLen = size;
 	
-	//==============
-
-	//============== < 5ms
 	u32 i = 0;
 	do {
 		u8 *start = video->decoder.decInput.pStream;
@@ -18,8 +12,6 @@ void Decode_Buffer_VIDEO_CLIENT(VIDEO_CLIENT *video, char *buffer, int size) {
 		//printf("Decoded Unit #%d, Size: %d, Result: %d\n", i++,
 		//	   (video->decoder.decInput.pStream - start), ret);
 	} while (video->decoder.decInput.dataLen > 0);
-
-	//std::cout << "super ending" << std::endl;
 }
 
 void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
@@ -30,42 +22,22 @@ void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
 		return;
 	}
 
-
 	VIDEO_ELEMENT *element = new VIDEO_ELEMENT;
-
-	//std::cout << "allocating " << buffer_size << std::endl;
 
 	element->bytes = new uint8_t[element->size];
 	element->size = buffer_size;
 
 	memcpy(element->bytes, buffer, buffer_size);
 
-	//delete [] element->bytes;
-	//delete element;
-
 	client->pool->push(element);
-	
-	
-	//VIDEO_CLIENT *client = (VIDEO_CLIENT*) user_ptr;
-
-	//Decode_Buffer_VIDEO_CLIENT(client, (char*) buffer, buffer_size);
 }
 
 static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData) {
 	VIDEO_CLIENT *video = (VIDEO_CLIENT*) userData;
 
-	/*
-	int width;
-	int height;
-
-	get_screen_width_height(&width, &height);
-	*/
-
 	SDL_Event event;
 	event.type = SDL_WINDOWEVENT;
 	event.window.event = SDL_WINDOWEVENT_RESIZED;
-	//event.window.data1 = width;
-	//event.window.data2 = height;
 	SDL_PushEvent(&event);
 
 	return 0;
@@ -101,7 +73,6 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 		   broadwayGetMinorVersion()));
 
 	broadwayInit(&decoder, 0, 0, 0, 0, (void*) this);
-	//byteStrmStart = broadwayCreateStream(&decoder, MAX_NAL_SIZE);
 
 	// Initialize SDL
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
@@ -213,7 +184,6 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 	SDL_RenderCopy(video->renderer, video->texture, NULL, NULL);
 	// Render the texture to the screen
 	SDL_RenderPresent(video->renderer);
-	// cout << "before" << endl;
 }
 
 extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height,
@@ -224,248 +194,130 @@ extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height,
 
 extern void broadwayOnHeadersDecoded() { printf("header decoded\n"); }
 
-TIMER t;
-
-void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
-	//cout << "time: " << Stop_TIMER(&t) << endl;
-
-	//============== < 1ms
+void Main_TCP_Loop_VIDEO_CLIENT(void *arg) {
 	VIDEO_CLIENT *video = (VIDEO_CLIENT *)arg;
 
 	MOUSE_EVENT_T m_event;
 	KEYBOARD_EVENT_T k_event;
 	VIDEO_ELEMENT *element;
 
-	int temp_width;
-	int temp_height;
-	//TIMER t;
-
-	//std::cout << "starting loop" << std::endl;
-
-	//while (video->main_loop_running) {
-		//cout << "starting main loop: " << getTime() << endl;
-		SDL_Event event;
-		while (SDL_PollEvent(&event)) {
-			switch (event.type) {
-			case SDL_MOUSEMOTION:
-				if (video->relative_mode) {
-					m_event.state = MOUSE_REL_COORD;
-					m_event.x = event.motion.xrel;
-					m_event.y = event.motion.yrel;
-				} else {
-					m_event.state = MOUSE_ABS_COORD;
-					m_event.x = event.motion.x;
-					m_event.y = event.motion.y;
-				}
-				m_event.clicked = false;
-				m_event.event_index = video->mouse_count++;
-				Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
-				//Send_CLIENT(video->mouse_service->c, (char *)&m_event,
-				//			sizeof(MOUSE_EVENT_T));
-				break;
-			case SDL_MOUSEBUTTONDOWN:
-				m_event.x = event.button.x;
-				m_event.y = event.button.y;
-				m_event.clicked = true;
-				m_event.state = 1;	// pressed
-				m_event.event_index = video->mouse_count++;
-				m_event.button = event.button.button;
-				Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
-				//Send_CLIENT(video->mouse_service->c, (char *)&m_event,
-				//			sizeof(MOUSE_EVENT_T));
-				break;
-			case SDL_MOUSEBUTTONUP:
-				m_event.x = event.button.x;
-				m_event.y = event.button.y;
-				m_event.clicked = true;
-				m_event.state = 0;	// released
-				m_event.event_index = video->mouse_count++;
-				m_event.button = event.button.button;
-				Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
-				//Send_CLIENT(video->mouse_service->c, (char *)&m_event,
-				//			sizeof(MOUSE_EVENT_T));
-				break;
-			case SDL_MOUSEWHEEL:
-				if (video->mouse_count++ % 8 != 0) break;
-				m_event.x = event.wheel.x;
-				m_event.y = event.wheel.y;
-				m_event.clicked = true;
-				m_event.state = 1;
-				m_event.event_index = video->mouse_count++;
-				m_event.button = (event.wheel.preciseY > 0) ? 4 : 5;
-				Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
-				//Send_CLIENT(video->mouse_service->c,
-				//	(char*) &m_event,
-				//	sizeof(MOUSE_EVENT_T));
-
-				m_event.x = event.wheel.x;
-				m_event.y = event.wheel.y;
-				m_event.clicked = true;
-				m_event.state = 0;
-				m_event.event_index = video->mouse_count++;
-				m_event.button = (event.wheel.preciseY > 0) ? 4 : 5;
-				Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
-				//Send_CLIENT(video->mouse_service->c,
-				//	(char*) &m_event,
-				//	sizeof(MOUSE_EVENT_T));
-				break;
-			case SDL_KEYDOWN:
-				if (event.key.keysym.sym == SDLK_RCTRL ||
-					event.key.keysym.sym == SDLK_LCTRL) {
-					video->ctrl_clicked = true;
-				}
-
-				k_event.code = event.key.keysym.sym;
-				k_event.value = 1;
-				k_event.event_index = video->keyboard_count++;
-				//Send_CLIENT(video->keyboard_service->c,
-				//	(char*) &k_event,
-				//	sizeof(KEYBOARD_EVENT_T));
-				break;
-			case SDL_KEYUP:
-				if (event.key.keysym.sym == SDLK_RCTRL ||
-					event.key.keysym.sym == SDLK_LCTRL) {
-					video->ctrl_clicked = false;
-				} else if (video->ctrl_clicked) {
-					switch (event.key.keysym.sym) {
-						case SDLK_1:
-							video->relative_mode =
-								!video->relative_mode;
-							SDL_SetRelativeMouseMode(
-								(SDL_bool)video->relative_mode);
-							break;
-						case SDLK_2:
-							//Density_THEMIS_CLIENT(video->ctx->themis_api,
-							//	kible::themis::PixelDensity::PIXELDENSITY_HIGH);
-							break;
-						case SDLK_3:
-							//Density_THEMIS_CLIENT(video->ctx->themis_api,
-							//	kible::themis::PixelDensity::PIXELDENSITY_MEDIUM);
-							break;
-						case SDLK_4:
-							//Density_THEMIS_CLIENT(video->ctx->themis_api,
-							//	kible::themis::PixelDensity::PIXELDENSITY_LOW);
-							break;
-						case SDLK_5:
-							//Density_THEMIS_CLIENT(video->ctx->themis_api,
-							//	kible::themis::PixelDensity::PIXELDENSITY_PLACEBO);
-							break;
-					}
-				}
-
-				k_event.code = event.key.keysym.sym;
-				k_event.value = 0;
-				k_event.event_index = video->keyboard_count++;
-				//Send_CLIENT(video->keyboard_service->c,
-				//	(char*) &k_event,
-				//	sizeof(KEYBOARD_EVENT_T));
-				break;
-			case SDL_WINDOWEVENT:
-				if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-					//Report_Resize_Function_VIDEO_CLIENT(video);
-				}
-				break;
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+		case SDL_MOUSEMOTION:
+			if (video->relative_mode) {
+				m_event.state = MOUSE_REL_COORD;
+				m_event.x = event.motion.xrel;
+				m_event.y = event.motion.yrel;
+			} else {
+				m_event.state = MOUSE_ABS_COORD;
+				m_event.x = event.motion.x;
+				m_event.y = event.motion.y;
 			}
+			m_event.clicked = false;
+			m_event.event_index = video->mouse_count++;
+			Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			m_event.x = event.button.x;
+			m_event.y = event.button.y;
+			m_event.clicked = true;
+			m_event.state = 1;	// pressed
+			m_event.event_index = video->mouse_count++;
+			m_event.button = event.button.button;
+			Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
+			break;
+		case SDL_MOUSEBUTTONUP:
+			m_event.x = event.button.x;
+			m_event.y = event.button.y;
+			m_event.clicked = true;
+			m_event.state = 0;	// released
+			m_event.event_index = video->mouse_count++;
+			m_event.button = event.button.button;
+			Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
+			break;
+		case SDL_MOUSEWHEEL:
+			if (video->mouse_count++ % 8 != 0) break;
+			m_event.x = event.wheel.x;
+			m_event.y = event.wheel.y;
+			m_event.clicked = true;
+			m_event.state = 1;
+			m_event.event_index = video->mouse_count++;
+			m_event.button = (event.wheel.preciseY > 0) ? 4 : 5;
+			Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
+
+			m_event.x = event.wheel.x;
+			m_event.y = event.wheel.y;
+			m_event.clicked = true;
+			m_event.state = 0;
+			m_event.event_index = video->mouse_count++;
+			m_event.button = (event.wheel.preciseY > 0) ? 4 : 5;
+			Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
+			break;
+		case SDL_KEYDOWN:
+			if (event.key.keysym.sym == SDLK_RCTRL ||
+				event.key.keysym.sym == SDLK_LCTRL) {
+				video->ctrl_clicked = true;
+			}
+
+			k_event.code = event.key.keysym.sym;
+			k_event.value = 1;
+			k_event.event_index = video->keyboard_count++;
+			Send_Event_KEYBOARD_CLIENT(video->keyboard, &k_event);
+			break;
+		case SDL_KEYUP:
+			if (event.key.keysym.sym == SDLK_RCTRL ||
+				event.key.keysym.sym == SDLK_LCTRL) {
+				video->ctrl_clicked = false;
+			} else if (video->ctrl_clicked) {
+				switch (event.key.keysym.sym) {
+					case SDLK_1:
+						video->relative_mode =
+							!video->relative_mode;
+						SDL_SetRelativeMouseMode(
+							(SDL_bool)video->relative_mode);
+						break;
+					case SDLK_2:
+						//Density_THEMIS_CLIENT(video->ctx->themis_api,
+						//	kible::themis::PixelDensity::PIXELDENSITY_HIGH);
+						break;
+					case SDLK_3:
+						//Density_THEMIS_CLIENT(video->ctx->themis_api,
+						//	kible::themis::PixelDensity::PIXELDENSITY_MEDIUM);
+						break;
+					case SDLK_4:
+						//Density_THEMIS_CLIENT(video->ctx->themis_api,
+						//	kible::themis::PixelDensity::PIXELDENSITY_LOW);
+						break;
+					case SDLK_5:
+						//Density_THEMIS_CLIENT(video->ctx->themis_api,
+						//	kible::themis::PixelDensity::PIXELDENSITY_PLACEBO);
+						break;
+				}
+			}
+
+			k_event.code = event.key.keysym.sym;
+			k_event.value = 0;
+			k_event.event_index = video->keyboard_count++;
+			Send_Event_KEYBOARD_CLIENT(video->keyboard, &k_event);
+			break;
+		case SDL_WINDOWEVENT:
+			if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+				//Report_Resize_Function_VIDEO_CLIENT(video);
+			}
+			break;
 		}
-
-		
-		if (video->pool->size() > 0) {
-			video->pool->pop(element);
-
-			//uint64_t HashVal = komihash( (char*) element->bytes, element->size, 0);
-
-			//std::cout << "poped " << element->size << " " << video->pool->size() << std::endl;
-			//Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
-
-
-			//memcpy(video->nal_buffer, element->bytes, element->size);
-
-			Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
-
-			//printf("Total memory: %u bytes\n", getTotalMemory());
-			//printf("Free memory: %u bytes\n", getFreeMemory());
-			//printf("Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
-	
-
-			//std::cout << "ok?!?!" << std::endl;
-
-			delete [] element->bytes;
-			delete element;
-		}
-		
-
-		/*
-		if (video->pool->size() > 0) {
-			video->pool->pop(element);
-
-			uint64_t HashVal = komihash( (char*) element->bytes, element->size, 0);
-
-			//std::cout << "poped " << element->size << " " << video->pool->size() << " " << HashVal << std::endl;
-			//Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
-
-
-			//memcpy(video->nal_buffer, element->bytes, element->size);
-
-			//Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
-
-			//std::cout << "ok?!?!" << std::endl;
-
-			delete [] element->bytes;
-			delete element;
-		}
-
-		//std::cout << "loop has come to an end" << std::endl;
-		*/
-
-		/*
-		int size;
-		if (Receive_CLIENT(video->c, (char *)&size, sizeof(int)) &&
-			Receive_CLIENT(video->c, video->nal_buffer, size)) {
-			//============== < 5ms
-			Decode_Buffer_VIDEO_CLIENT(video, video->nal_buffer, size);
-			//==============
-		}
-		*/
-		//==============
-		
-		//============== < 10ms && < 70ms
-		/*
-		int size;
-		Start_TIMER(&t);
-		if (Receive_CLIENT(video->c, (char *)&size, sizeof(int)) &&
-			Receive_CLIENT(video->c, video->nal_buffer, size)) {
-			cout << "outer time: " << Stop_TIMER(&t) << " " << getTime() << endl;
-			Start_TIMER(&t);
-			//============== < 5ms
-			Decode_Buffer_VIDEO_CLIENT(video, video->nal_buffer, size);
-			cout << "render time: " << Stop_TIMER(&t) << " " << getTime() << endl;
-			//==============
-		}
-		*/
-		
-		//==============
-	//}
-
-	//Start_TIMER(&t);
-}
-
-bool Resize_VIDEO_CLIENT(VIDEO_CLIENT *video, int width, int height) {
-	return true;
-}
-
-bool Status_VIDEO_CLIENT(VIDEO_CLIENT *video) {
-	return video->main_loop_running;
-}
-
-void Disconnect_VIDEO_CLIENT(VIDEO_CLIENT *video) {
-	/*
-	video->main_loop_running = false;
-	if (video->main_loop != NULL) {
-		video->main_loop->join();
-		delete video->main_loop;
-		video->main_loop = NULL;
 	}
-	*/
+
+		
+	if (video->pool->size() > 0) {
+		video->pool->pop(element);
+
+		Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
+
+		delete [] element->bytes;
+		delete element;
+	}
 }
 
 /*

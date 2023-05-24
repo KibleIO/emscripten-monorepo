@@ -4,6 +4,7 @@
 #include "../Rana_Core_Utils/Utilities/ASSERT.h"
 #include "../Rana_Core_Utils/Utilities/KCONTEXT.h"
 #include "../Rana_Core_Utils/controller/client/SERVICE_CLIENT.h"
+#include "../Rana_Core_Utils/Utilities/KEYBOARD.h"
 
 struct KEYBOARD_CLIENT : public SERVICE_CLIENT {
 	KCONTEXT *ctx;
@@ -13,5 +14,7 @@ struct KEYBOARD_CLIENT : public SERVICE_CLIENT {
 	bool Initialize(KCONTEXT*, SERVICE_CLIENT_REGISTRY*) override;
 	void Delete() override;
 };
+
+void Send_Event_KEYBOARD_CLIENT(KEYBOARD_CLIENT*, KEYBOARD_EVENT_T*);
 
 #endif

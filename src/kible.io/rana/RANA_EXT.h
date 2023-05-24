@@ -7,6 +7,7 @@
 #include "client/MOUSE_CLIENT.h"
 #include "client/KEYBOARD_CLIENT.h"
 #include "client/AUDIO_CLIENT.h"
+#include "client/KEEP_ALIVE_CLIENT.h"
 #include "LIMITS.h"
 
 struct RANA_EXT {
