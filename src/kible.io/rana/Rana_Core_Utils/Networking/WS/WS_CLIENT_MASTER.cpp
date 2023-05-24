@@ -15,7 +15,7 @@ EM_BOOL On_Open_WS_CLIENT_MASTER(int eventType,
 
 EM_BOOL On_Error_WS_CLIENT_MASTER(int eventType,
 	const EmscriptenWebSocketErrorEvent *websocketEvent, void *userData) {
-	
+
 	WS_CLIENT_MASTER *client = (WS_CLIENT_MASTER*) userData;
 	client->accept = false;
 	return EM_TRUE;
@@ -26,6 +26,7 @@ EM_BOOL On_Close_WS_CLIENT_MASTER(int eventType,
 
 	WS_CLIENT_MASTER *client = (WS_CLIENT_MASTER*) userData;
 	client->accept = false;
+
 	return EM_TRUE;
 }
 
@@ -49,7 +50,7 @@ EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 		return EM_FALSE;
 	}
 
-	//std::cout << "On_Message_WS_CLIENT_MASTER3 " << int(websocketEvent->data[0]) << " " << len << " " << (void*) client->consumers << std::endl;
+	std::cout << "On_Message_WS_CLIENT_MASTER3 " << int(websocketEvent->data[0]) << " " << len << " " << (void*) client->consumers << " " << (void*) client->consumers[int(websocketEvent->data[0])].callback << std::endl;
 
 	if (client->consumers[int(websocketEvent->data[0])].callback != NULL) {
 		//std::cout << "On_Message_WS_CLIENT_MASTER51212 " << int(websocketEvent->data[0]) << " " << len << " " << std::endl;
@@ -73,8 +74,6 @@ bool Initialize_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client, KCONTEXT *ctx,
 	client->accept = false;
 
 	Set_Name_WS_CLIENT_MASTER(client, "unknown");
-
-	std::cout << "setting everything to null" << std::endl;
 
 	for (int i = 0; i < MAX_HOSTS; i++) {
 		client->consumers[i].callback = NULL;
@@ -152,8 +151,6 @@ uint8_t Register_Vhost_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 	//client->consumers[int(client->host_count)] = new WEBSOCKET_CONSUMER;
 	client->consumers[int(client->host_count)].user_ptr = user_ptr;
 	client->consumers[int(client->host_count)].callback = callback;
-
-	//std::cout << "registering " << int(client->host_count) << " " << (void*) client->consumers << " " << (void*) client->consumers[int(client->host_count)] << " " << (void*) client->consumers[0] << std::endl;
 
 	return client->host_count++;
 }

@@ -17,3 +17,8 @@ bool MOUSE_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 
 void MOUSE_CLIENT::Delete() {
 }
+
+void Send_Event_MOUSE_CLIENT(MOUSE_CLIENT *client, MOUSE_EVENT_T *event) {
+	Send_SOCKET_CLIENT(&client->socket_client, (char*) event,
+		sizeof(MOUSE_EVENT_T));
+}

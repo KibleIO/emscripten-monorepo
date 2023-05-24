@@ -9,11 +9,21 @@ bool Initialize_SERVICE_CLIENT_REGISTRY(SERVICE_CLIENT_REGISTRY *registry,
 		registry->service_client[i] = NULL;
 	}
 
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
+
 	if (!Initialize_SOCKET_CLIENT_REGISTRY(
 		&registry->socket_client_registry)) {
 		
 		return false;
 	}
+
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
 
 	if (!Initialize_ROOT_SOCKET_CLIENT(
 		&registry->socket_client_registry.root_sockets
@@ -23,17 +33,33 @@ bool Initialize_SERVICE_CLIENT_REGISTRY(SERVICE_CLIENT_REGISTRY *registry,
 		return false;
 	}
 
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
+
 	va_list args;
 	va_start(args, count);
 	for (int i = 0; i < count; i++) {
+		printf("Total memory: %u bytes\n", getTotalMemory());
+		printf("Free memory: %u bytes\n", getFreeMemory());
+		printf("Used: %d %u bytes (%.2f%%)\n", i, getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
 		registry->service_client[i] = va_arg(args, SERVICE_CLIENT*);
 		if (!registry->service_client[i]->Initialize(ctx, registry)) {
 			return false;
 		}
+		printf("Total memory: %u bytes\n", getTotalMemory());
+		printf("Free memory: %u bytes\n", getFreeMemory());
+		printf("Used: %d %u bytes (%.2f%%)\n", i, getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
+		registry->service_count++;
 	}
 	va_end(args);
 
-	registry->service_count = count;
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
 
 	return true;
 }

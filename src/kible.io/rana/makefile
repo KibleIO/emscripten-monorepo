@@ -8,14 +8,14 @@ OBJECTS = $(SOURCES:.cpp=.o)
 
 CC_BUILD_FLAGS = -I../protolib -I../gen
 
-CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=3072MB -sUSE_WEBGL2=1 \
+CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=3584MB -sUSE_WEBGL2=1 \
 -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -sNO_EXIT_RUNTIME=1 \
--sALIASING_FUNCTION_POINTERS=1 -sDOUBLE_MODE=0 --memory-init-file 1 \
+-sALIASING_FUNCTION_POINTERS=1 -sDOUBLE_MODE=0 \
 ../Broadway-H.264-decoder/libbroadway.a ../opus/.libs/libopus.a \
-../protolib/libprotobuf.a -sSTACK_SIZE=512MB -sPTHREAD_POOL_SIZE=20 -sFETCH
+../protolib/libprotobuf.a -sSTACK_SIZE=512MB -sPTHREAD_POOL_SIZE=10 -sFETCH
 
 #use for debugging
-#CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=3072MB -sUSE_WEBGL2=1 \
+#CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=3584MB -sUSE_WEBGL2=1 \
 ../Broadway-H.264-decoder/libbroadway.a ../opus/.libs/libopus.a \
 ../protolib/libprotobuf.a -sSTACK_SIZE=512MB -sPTHREAD_POOL_SIZE=10 -sFETCH
 

@@ -102,3 +102,16 @@ int64_t getTime() {
 	gettimeofday(&start, NULL);
 	return ((start.tv_sec) * 1000 + start.tv_usec / 1000.0) + 0.5;
 }
+
+unsigned int getTotalMemory()
+{
+	return EM_ASM_INT(return HEAP8.length);
+}
+
+unsigned int getFreeMemory()
+{
+	s_mallinfo i = mallinfo();
+	unsigned int totalMemory = getTotalMemory();
+	unsigned int dynamicTop = (unsigned int)sbrk(0);
+	return totalMemory - dynamicTop + i.fordblks;
+}

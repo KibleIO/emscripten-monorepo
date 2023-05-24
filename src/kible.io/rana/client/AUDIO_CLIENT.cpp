@@ -5,6 +5,10 @@ void Recv_Callback_AUDIO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
 }
 
 bool AUDIO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) {
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("audio1 Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
 	ctx = ctx;
 	main_loop = NULL;
 	main_loop_running = false;
@@ -19,6 +23,12 @@ bool AUDIO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 				opus_strerror(error));
 		return false;
 	}
+
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("audio2 Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
+
 	// Set the desired audio format
 	SDL_AudioSpec desiredSpec, obtainedSpec;
 	SDL_zero(obtainedSpec);
@@ -29,6 +39,11 @@ bool AUDIO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 	desiredSpec.samples = FRAME_SIZE;
 	desiredSpec.callback = NULL;	 // Set the audio callback function
 	desiredSpec.userdata = NULL;
+
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("audio3 Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
 
 	// Open the audio device
 	if ((audioDevice = SDL_OpenAudioDevice(
@@ -44,9 +59,31 @@ bool AUDIO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 		return false;
 	}
 
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("audio41 Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
 	SDL_PauseAudioDevice(audioDevice, 0);
+
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("audio42 Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
+
 	main_loop_running = true;
-	main_loop = new thread(Main_TCP_Loop_AUDIO_CLIENT, this);
+
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("audio43 Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
+
+
+	//main_loop = new thread(Main_TCP_Loop_AUDIO_CLIENT, this);
+
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("audio5 Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
 
 	return true;
 }

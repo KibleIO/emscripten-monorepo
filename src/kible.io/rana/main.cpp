@@ -1,7 +1,12 @@
 #include "RANA_EXT.h"
 #include "Rana_Core_Utils/Utilities/ASSERT.h"
+#include "Rana_Core_Utils/Utilities/UTILS.h"
 
 int main() {
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
 	KCONTEXT ctx;
 	RANA_EXT rana_ext;
 
@@ -49,6 +54,31 @@ int main() {
 
 	ASSERT_E_R((Initialize_RANA_EXT(&rana_ext, &ctx)),
 		"failed to initialize rana_ext", &ctx);
+	
+	/*
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
+	SERVICE_CLIENT_REGISTRY registry;
+	MOUSE_CLIENT mouse;
+	KEYBOARD_CLIENT keyboard;
+	VIDEO_CLIENT video;
+	AUDIO_CLIENT audio;
+
+	if (!Initialize_SERVICE_CLIENT_REGISTRY(&registry, &ctx, 4,
+		&mouse,
+		&keyboard,
+		&video,
+		&audio)) {
+		
+		return false;
+	}
+
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+	*/
 
 	return 0;
 }

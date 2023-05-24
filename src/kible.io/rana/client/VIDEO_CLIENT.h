@@ -56,6 +56,9 @@ struct VIDEO_CLIENT : public SERVICE_CLIENT {
 	bool ctrl_clicked;
 	bool relative_mode;
 
+	MOUSE_CLIENT *mouse;
+	KEYBOARD_CLIENT *keyboard;
+
 	SOCKET_CLIENT socket_client;
 	Queue<VIDEO_ELEMENT*>	*pool;
 

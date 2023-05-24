@@ -3,6 +3,7 @@
 
 #include <stdarg.h>
 #include "../../Utilities/KCONTEXT.h"
+#include "../../Utilities/UTILS.h"
 #include "../../Networking/base/client/SOCKET_CLIENT.h"
 #include "../../Networking/base/client/SOCKET_CLIENT_REGISTRY.h"
 

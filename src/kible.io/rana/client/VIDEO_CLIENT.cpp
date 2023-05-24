@@ -1,5 +1,4 @@
 #include "VIDEO_CLIENT.h"
-#include "komihash.h"
 
 void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
 	/*
@@ -18,6 +17,8 @@ void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
 	
 	VIDEO_CLIENT *client = (VIDEO_CLIENT*) user_ptr;
 	VIDEO_ELEMENT *element = new VIDEO_ELEMENT;
+
+	//std::cout << "allocating " << buffer_size << std::endl;
 
 	element->bytes = new uint8_t[buffer_size];
 	element->size = buffer_size;
@@ -69,6 +70,10 @@ void Actually_Resize_Window_VIDEO_CLIENT(VIDEO_CLIENT *video, int width, int hei
 }
 
 bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) {
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("video Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
 	ctx = ctx;
 	main_loop = NULL;
 	main_loop_running = false;
@@ -77,7 +82,10 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 	texture = NULL;
 	ctrl_clicked = false;
 	relative_mode = false;
+	mouse = Get_Instance_Of_SERVICE_CLIENT_REGISTRY<MOUSE_CLIENT*>(registry);
+	keyboard = Get_Instance_Of_SERVICE_CLIENT_REGISTRY<KEYBOARD_CLIENT*>(registry);
 	pool = new Queue<VIDEO_ELEMENT*>;
+	
 
 	//memset(nal_buffer, 0, MAX_NAL_SIZE);
 
@@ -116,6 +124,11 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 	
 	emscripten_set_main_loop_arg(
 		[](void *arg) { Main_TCP_Loop_VIDEO_CLIENT(arg); }, this, 0, 0);
+	
+	printf("Total memory: %u bytes\n", getTotalMemory());
+	printf("Free memory: %u bytes\n", getFreeMemory());
+	printf("video Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+
 	
 	return true;
 }
@@ -267,6 +280,7 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
 				}
 				m_event.clicked = false;
 				m_event.event_index = video->mouse_count++;
+				Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
 				//Send_CLIENT(video->mouse_service->c, (char *)&m_event,
 				//			sizeof(MOUSE_EVENT_T));
 				break;
@@ -277,6 +291,7 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
 				m_event.state = 1;	// pressed
 				m_event.event_index = video->mouse_count++;
 				m_event.button = event.button.button;
+				Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
 				//Send_CLIENT(video->mouse_service->c, (char *)&m_event,
 				//			sizeof(MOUSE_EVENT_T));
 				break;
@@ -287,6 +302,7 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
 				m_event.state = 0;	// released
 				m_event.event_index = video->mouse_count++;
 				m_event.button = event.button.button;
+				Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
 				//Send_CLIENT(video->mouse_service->c, (char *)&m_event,
 				//			sizeof(MOUSE_EVENT_T));
 				break;
@@ -298,7 +314,7 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
 				m_event.state = 1;
 				m_event.event_index = video->mouse_count++;
 				m_event.button = (event.wheel.preciseY > 0) ? 4 : 5;
-
+				Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
 				//Send_CLIENT(video->mouse_service->c,
 				//	(char*) &m_event,
 				//	sizeof(MOUSE_EVENT_T));
@@ -309,7 +325,7 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
 				m_event.state = 0;
 				m_event.event_index = video->mouse_count++;
 				m_event.button = (event.wheel.preciseY > 0) ? 4 : 5;
-
+				Send_Event_MOUSE_CLIENT(video->mouse, &m_event);
 				//Send_CLIENT(video->mouse_service->c,
 				//	(char*) &m_event,
 				//	sizeof(MOUSE_EVENT_T));
@@ -462,4 +478,21 @@ void Disconnect_VIDEO_CLIENT(VIDEO_CLIENT *video) {
 		delete video->main_loop;
 		video->main_loop = NULL;
 	}
+}
+
+/*
+
+why does this have to be defined here? https://stackoverflow.com/questions/56392506/compiler-optimization-removes-implicit-template-instantiation-leading-to-linker
+
+*/
+template<typename T>
+T Get_Instance_Of_SERVICE_CLIENT_REGISTRY(SERVICE_CLIENT_REGISTRY *registry) {
+	T return_type = NULL;
+	for (int i = 0; i < registry->service_count; i++) {
+		return_type = dynamic_cast<const T>(registry->service_client[i]);
+		if (return_type != NULL) {
+			return return_type;
+		}
+	}
+	return return_type;
 }
