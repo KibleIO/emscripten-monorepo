@@ -1,28 +1,28 @@
 #include "ROOT_SOCKET_CLIENT.h"
 
-bool Initialize_ROOT_SOCKET_CLIENT(ROOT_SOCKET_CLIENT *CLIENT, KCONTEXT *ctx,
+bool Initialize_ROOT_SOCKET_CLIENT(ROOT_SOCKET_CLIENT *client, KCONTEXT *ctx,
 	int port, char *address) {
 
-	CLIENT->type = ctx->core_services_backbone;
+	client->type = ctx->core_services_backbone;
 
-	switch (CLIENT->type) {
+	switch (client->type) {
 		case ROOT_SOCKET_TYPE_WS:
 			if (!Initialize_WS_CLIENT_MASTER(
-				&CLIENT->ws_client_master, ctx, port, address)) {
+				&client->ws_client_master, ctx, port, address)) {
 				
 				return false;
 			}
-			CLIENT->initialized = true;
+			client->initialized = true;
 			return true;
 		default:
 			return false;
 	}
 }
 
-void Delete_ROOT_SOCKET_CLIENT(ROOT_SOCKET_CLIENT *CLIENT) {
-	switch (CLIENT->type) {
+void Delete_ROOT_SOCKET_CLIENT(ROOT_SOCKET_CLIENT *client) {
+	switch (client->type) {
 		case ROOT_SOCKET_TYPE_WS:
-			Delete_WS_CLIENT_MASTER(&CLIENT->ws_client_master);
+			Delete_WS_CLIENT_MASTER(&client->ws_client_master);
 			break;
 	}
 }

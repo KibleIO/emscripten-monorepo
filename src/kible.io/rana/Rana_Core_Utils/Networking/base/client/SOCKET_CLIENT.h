@@ -8,13 +8,13 @@
 
 struct SOCKET_CLIENT {
 	int type;
-	union {
-		WS_CLIENT ws_client;
-	};
+	WS_CLIENT ws_client;
 };
 
+//bool Initialize_SOCKET_CLIENT(SOCKET_CLIENT*, Receive_Callback_SOCKET_CLIENT,
+//	SOCKET_CLIENT_REGISTRY*, KCONTEXT*, void*);
 bool Initialize_SOCKET_CLIENT(SOCKET_CLIENT*, Receive_Callback_SOCKET_CLIENT,
-	SOCKET_CLIENT_REGISTRY*, KCONTEXT*, void*);
+	WS_CLIENT_MASTER*, KCONTEXT*, void*);
 bool Send_SOCKET_CLIENT(SOCKET_CLIENT*, char*, int);
 void Delete_SOCKET_CLIENT(SOCKET_CLIENT*);
 

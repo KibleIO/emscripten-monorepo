@@ -1,5 +1,27 @@
 #include "VIDEO_CLIENT.h"
 
+void Decode_Buffer_VIDEO_CLIENT(VIDEO_CLIENT *video, char *buffer, int size) {
+
+	//std::cout << "in Decode_Buffer_VIDEO_CLIENT" << std::endl;
+
+	video->decoder.streamStop = (u8 *)buffer + size;
+	video->decoder.decInput.pStream = (u8 *)buffer;
+	video->decoder.decInput.dataLen = size;
+	
+	//==============
+
+	//============== < 5ms
+	u32 i = 0;
+	do {
+		u8 *start = video->decoder.decInput.pStream;
+		u32 ret = broadwayDecode(&video->decoder);
+		printf("Decoded Unit #%d, Size: %d, Result: %d\n", i++,
+			   (video->decoder.decInput.pStream - start), ret);
+	} while (video->decoder.decInput.dataLen > 0);
+
+	//std::cout << "super ending" << std::endl;
+}
+
 void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
 	/*
 	if (buffer_size == 0) {
@@ -20,7 +42,7 @@ void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
 
 	//std::cout << "allocating " << buffer_size << std::endl;
 
-	element->bytes = new uint8_t[buffer_size];
+	element->bytes = new uint8_t[MAX_NAL_SIZE];
 	element->size = buffer_size;
 
 	memcpy(element->bytes, buffer, buffer_size);
@@ -29,6 +51,7 @@ void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
 	//delete element;
 
 	client->pool->push(element);
+	
 	
 	//VIDEO_CLIENT *client = (VIDEO_CLIENT*) user_ptr;
 
@@ -75,7 +98,7 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 	printf("video Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
 
 	ctx = ctx;
-	main_loop = NULL;
+	//main_loop = NULL;
 	main_loop_running = false;
 	mouse_count = 1;
 	keyboard_count = 1;
@@ -84,7 +107,7 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 	relative_mode = false;
 	mouse = Get_Instance_Of_SERVICE_CLIENT_REGISTRY<MOUSE_CLIENT*>(registry);
 	keyboard = Get_Instance_Of_SERVICE_CLIENT_REGISTRY<KEYBOARD_CLIENT*>(registry);
-	pool = new Queue<VIDEO_ELEMENT*>;
+	//pool = new Queue<VIDEO_ELEMENT*>;
 	
 
 	//memset(nal_buffer, 0, MAX_NAL_SIZE);
@@ -93,7 +116,7 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 		   broadwayGetMinorVersion()));
 
 	broadwayInit(&decoder, 0, 0, 0, 0, (void*) this);
-	byteStrmStart = broadwayCreateStream(&decoder, MAX_NAL_SIZE);
+	//byteStrmStart = broadwayCreateStream(&decoder, MAX_NAL_SIZE);
 
 	// Initialize SDL
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
@@ -112,8 +135,17 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 	Actually_Resize_Window_VIDEO_CLIENT(this, ctx->screen_dim.bw,
 		ctx->screen_dim.h);
 
+	/*
 	if (!Initialize_SOCKET_CLIENT(&socket_client,
 		Recv_Callback_VIDEO_CLIENT, &registry->socket_client_registry,
+		ctx, this)) {
+		
+		return false;
+	}
+	*/
+
+	if (!Initialize_SOCKET_CLIENT(&socket_client,
+		Recv_Callback_VIDEO_CLIENT, registry->ws_client_master,
 		ctx, this)) {
 		
 		return false;
@@ -216,7 +248,7 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height,
 	void *user_data) {
 	
-	//std::cout << "in broadwayOnPictureDecoded new" << std::endl;
+	//std::cout << "in broadwayOnPictureDecoded new " << width << " " << height << std::endl;
 
 	yuv_to_pixels(buffer, width, height, user_data);
 }
@@ -224,28 +256,6 @@ extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height,
 extern void broadwayOnHeadersDecoded() { printf("header decoded\n"); }
 
 TIMER t;
-
-void Decode_Buffer_VIDEO_CLIENT(VIDEO_CLIENT *video, char *buffer, int size) {
-
-	//std::cout << "in Decode_Buffer_VIDEO_CLIENT" << std::endl;
-
-	video->decoder.streamStop = (u8 *)buffer + size;
-	video->decoder.decInput.pStream = (u8 *)buffer;
-	video->decoder.decInput.dataLen = size;
-	
-	//==============
-
-	//============== < 5ms
-	u32 i = 0;
-	do {
-		u8 *start = video->decoder.decInput.pStream;
-		u32 ret = broadwayDecode(&video->decoder);
-		//printf("Decoded Unit #%d, Size: %d, Result: %d\n", i++,
-		//	   (video->decoder.decInput.pStream - start), ret);
-	} while (video->decoder.decInput.dataLen > 0);
-
-	//std::cout << "super ending" << std::endl;
-}
 
 void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
 	//cout << "time: " << Stop_TIMER(&t) << endl;
@@ -389,12 +399,13 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
 			}
 		}
 
+		
 		if (video->pool->size() > 0) {
 			video->pool->pop(element);
 
 			//uint64_t HashVal = komihash( (char*) element->bytes, element->size, 0);
 
-			std::cout << "poped " << element->size << " " << video->pool->size() << std::endl;
+			//std::cout << "poped " << element->size << " " << video->pool->size() << std::endl;
 			//Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
 
 
@@ -402,11 +413,17 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg/*VIDEO_CLIENT *video*/) {
 
 			Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
 
+			//printf("Total memory: %u bytes\n", getTotalMemory());
+			//printf("Free memory: %u bytes\n", getFreeMemory());
+			//printf("Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
+	
+
 			//std::cout << "ok?!?!" << std::endl;
 
 			delete [] element->bytes;
 			delete element;
 		}
+		
 
 		/*
 		if (video->pool->size() > 0) {
@@ -472,12 +489,14 @@ bool Status_VIDEO_CLIENT(VIDEO_CLIENT *video) {
 }
 
 void Disconnect_VIDEO_CLIENT(VIDEO_CLIENT *video) {
+	/*
 	video->main_loop_running = false;
 	if (video->main_loop != NULL) {
 		video->main_loop->join();
 		delete video->main_loop;
 		video->main_loop = NULL;
 	}
+	*/
 }
 
 /*

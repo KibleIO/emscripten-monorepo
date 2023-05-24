@@ -18,8 +18,10 @@ struct WS_CLIENT {
 	uint8_t client_id;
 };
 
+//bool Initialize_WS_CLIENT(WS_CLIENT*, Receive_Callback_SOCKET_CLIENT,
+//	SOCKET_CLIENT_REGISTRY*, KCONTEXT*, void*);
 bool Initialize_WS_CLIENT(WS_CLIENT*, Receive_Callback_SOCKET_CLIENT,
-	SOCKET_CLIENT_REGISTRY*, KCONTEXT*, void*);
+	WS_CLIENT_MASTER*, KCONTEXT*, void*);
 void Set_Name_WS_CLIENT(WS_CLIENT*, char*);
 bool Set_Recv_Timeout_WS_CLIENT(WS_CLIENT*, int, int);
 bool Set_High_Priority_WS_CLIENT(WS_CLIENT*);

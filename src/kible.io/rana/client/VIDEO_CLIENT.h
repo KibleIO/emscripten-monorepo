@@ -32,7 +32,7 @@ struct VIDEO_ELEMENT {
 struct VIDEO_CLIENT : public SERVICE_CLIENT {
 	KCONTEXT *ctx;
 
-	thread *main_loop;
+	//thread *main_loop;
 	volatile bool main_loop_running;
 	//char nal_buffer[MAX_NAL_SIZE];
 
@@ -72,5 +72,7 @@ void Get_Frame_VIDEO_CLIENT(VIDEO_CLIENT *, uint8_t *);
 bool Status_VIDEO_CLIENT(VIDEO_CLIENT *);
 bool Resize_VIDEO_CLIENT(VIDEO_CLIENT *, int, int);
 void Disconnect_VIDEO_CLIENT(VIDEO_CLIENT *);
+
+//void Recv_Callback_VIDEO_CLIENT(void *, char *, int);
 
 #endif

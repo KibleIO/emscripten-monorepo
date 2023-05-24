@@ -10,6 +10,9 @@ EM_BOOL On_Open_WS_CLIENT_MASTER(int eventType,
 
 	client->socket = websocketEvent->socket;
 	client->accept = true;
+
+	std::cout << "HELLO WORLDzzzzz1 " << (void*) client->socket << std::endl;
+
 	return EM_TRUE;
 }
 
@@ -50,13 +53,14 @@ EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 		return EM_FALSE;
 	}
 
-	std::cout << "On_Message_WS_CLIENT_MASTER3 " << int(websocketEvent->data[0]) << " " << len << " " << (void*) client->consumers << " " << (void*) client->consumers[int(websocketEvent->data[0])].callback << std::endl;
+	std::cout << "On_Message_WS_CLIENT_MASTER3 " << int(websocketEvent->data[0]) << " " << len << " " << (void*) client << " " << (void*) client->user_ptr << std::endl;
 
-	if (client->consumers[int(websocketEvent->data[0])].callback != NULL) {
+	if (client->user_ptr != NULL && int(websocketEvent->data[0]) == 2) {
 		//std::cout << "On_Message_WS_CLIENT_MASTER51212 " << int(websocketEvent->data[0]) << " " << len << " " << std::endl;
 		//std::cout << "On_Message_WS_CLIENT_MASTER5 " << int(websocketEvent->data[0]) << " " << len << std::endl;
-		client->consumers[int(websocketEvent->data[0])].callback(
-			client->consumers[int(websocketEvent->data[0])].user_ptr,
+		//client->consumers[int(websocketEvent->data[0])].callback(
+		Recv_Callback_VIDEO_CLIENT(
+			client->user_ptr,
 			(char*)websocketEvent->data + 1,
 			len - 1);
 	}
@@ -69,15 +73,17 @@ EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 bool Initialize_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client, KCONTEXT *ctx,
 	int port, char *ip) {
 	
-	client->ctx = ctx;
+	//client->ctx = ctx;
 	client->host_count = 0;
 	client->accept = false;
 
-	Set_Name_WS_CLIENT_MASTER(client, "unknown");
+	//Set_Name_WS_CLIENT_MASTER(client, "kord");
 
-	for (int i = 0; i < MAX_HOSTS; i++) {
-		client->consumers[i].callback = NULL;
-	}
+	//for (int i = 0; i < MAX_HOSTS; i++) {
+	//	client->consumers[i].user_ptr = NULL;
+	//}
+
+	client->user_ptr = NULL;
 
 	#ifdef __EMSCRIPTEN__
 
@@ -131,6 +137,8 @@ bool Send_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 	send_bytes[0] = client_index;
 	copy(bytes, bytes + size, &send_bytes[1]);
 
+	std::cout << "sending mouse123 " << (void*) client->socket << std::endl;
+
 	#ifdef __EMSCRIPTEN__
 
 	emscripten_websocket_send_binary(client->socket, send_bytes, size + 1);
@@ -149,14 +157,20 @@ uint8_t Register_Vhost_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client,
 	}
 
 	//client->consumers[int(client->host_count)] = new WEBSOCKET_CONSUMER;
-	client->consumers[int(client->host_count)].user_ptr = user_ptr;
-	client->consumers[int(client->host_count)].callback = callback;
+	//client->consumers[int(client->host_count)].user_ptr = user_ptr;
+	//client->consumers[int(client->host_count)].callback = callback;
+
+	if (client->host_count == 2) {
+		client->user_ptr = user_ptr;
+		std::cout << "registered " << int(client->host_count) << " " << (void*) client << " " << (void*) client->user_ptr << std::endl;
+	}
+	//std::cout << "registered " << int(client->host_count) << " " << (void*) client->consumers << " " << (void*) client->consumers[int(client->host_count)].user_ptr << std::endl;
 
 	return client->host_count++;
 }
 
 void Set_Name_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client, char *name) {
-	strcpy(client->name, name);
+	//strcpy(client->name, name);
 }
 
 bool Set_Recv_Timeout_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client, int sec,

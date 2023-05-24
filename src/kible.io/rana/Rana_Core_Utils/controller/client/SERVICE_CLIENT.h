@@ -16,9 +16,18 @@ struct SERVICE_CLIENT {
 	virtual void Delete() = 0;
 };
 
+/*
 struct SERVICE_CLIENT_REGISTRY {
 	KCONTEXT *ctx;
 	SOCKET_CLIENT_REGISTRY socket_client_registry;
+	SERVICE_CLIENT *service_client[MAX_SERVICES];
+	int service_count;
+};
+*/
+
+struct SERVICE_CLIENT_REGISTRY {
+	KCONTEXT *ctx;
+	WS_CLIENT_MASTER *ws_client_master;
 	SERVICE_CLIENT *service_client[MAX_SERVICES];
 	int service_count;
 };

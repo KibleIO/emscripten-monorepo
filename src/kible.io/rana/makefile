@@ -1,18 +1,19 @@
 #use for debugging
 #CC = em++ -O0 -sUSE_SDL=2 -sUSE_PTHREADS --profiling-funcs -sSAFE_HEAP=1 -sASSERTIONS=1 -sSTACK_OVERFLOW_CHECK=2 -gsource-map
-CC = em++ -O3 -sDISABLE_EXCEPTION_CATCHING=1 -sUSE_SDL=2 -sUSE_PTHREADS -pthread
+CC = em++ -O3 -sDISABLE_EXCEPTION_CATCHING=1 -sUSE_SDL=2
 BC = index.bc
 EXEC = index.js
+#SOURCES = main.cpp Rana_Core_Utils/Utilities/UTILS.cpp
 SOURCES = $(wildcard *.cpp) $(wildcard */*.cpp) $(wildcard */*/*.cpp) $(wildcard */*/*/*.cpp) $(wildcard */*/*/*/*.cpp) $(wildcard ../gen/*/*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
 CC_BUILD_FLAGS = -I../protolib -I../gen
 
-CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=3584MB -sUSE_WEBGL2=1 \
+CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=4000MB -sUSE_WEBGL2=1 \
 -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -sNO_EXIT_RUNTIME=1 \
 -sALIASING_FUNCTION_POINTERS=1 -sDOUBLE_MODE=0 \
 ../Broadway-H.264-decoder/libbroadway.a ../opus/.libs/libopus.a \
-../protolib/libprotobuf.a -sSTACK_SIZE=512MB -sPTHREAD_POOL_SIZE=10 -sFETCH
+../protolib/libprotobuf.a -sFETCH -sALLOW_MEMORY_GROWTH -sMAXIMUM_MEMORY=4096MB
 
 #use for debugging
 #CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=3584MB -sUSE_WEBGL2=1 \

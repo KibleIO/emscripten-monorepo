@@ -22,7 +22,7 @@
 
 struct AUDIO_CLIENT : public SERVICE_CLIENT {
 	KCONTEXT *ctx;
-	thread *main_loop;
+	//thread *main_loop;
 	volatile bool main_loop_running;
 	char nal_buffer[MAX_NAL_SIZE1];
 	opus_int16 pcm[FRAME_SIZE * CHANNELS * sizeof(opus_int16)];
