@@ -15,34 +15,27 @@ void Decode_Buffer_VIDEO_CLIENT(VIDEO_CLIENT *video, char *buffer, int size) {
 	do {
 		u8 *start = video->decoder.decInput.pStream;
 		u32 ret = broadwayDecode(&video->decoder);
-		printf("Decoded Unit #%d, Size: %d, Result: %d\n", i++,
-			   (video->decoder.decInput.pStream - start), ret);
+		//printf("Decoded Unit #%d, Size: %d, Result: %d\n", i++,
+		//	   (video->decoder.decInput.pStream - start), ret);
 	} while (video->decoder.decInput.dataLen > 0);
 
 	//std::cout << "super ending" << std::endl;
 }
 
 void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
-	/*
-	if (buffer_size == 0) {
+	VIDEO_CLIENT *client = (VIDEO_CLIENT*) user_ptr;
+
+	if (client->pool->size() > MAX_ACCUMULATED_FRAMES) {
+		std::cout << "dropping frame" << std::endl;
 		return;
 	}
 
-	std::cout << "welp, in Recv_Callback_VIDEO_CLIENT" << std::endl;
 
-
-	
-
-	std::cout << "pushed " << buffer_size << std::endl;
-	*/
-
-	
-	VIDEO_CLIENT *client = (VIDEO_CLIENT*) user_ptr;
 	VIDEO_ELEMENT *element = new VIDEO_ELEMENT;
 
 	//std::cout << "allocating " << buffer_size << std::endl;
 
-	element->bytes = new uint8_t[MAX_NAL_SIZE];
+	element->bytes = new uint8_t[element->size];
 	element->size = buffer_size;
 
 	memcpy(element->bytes, buffer, buffer_size);
@@ -93,10 +86,6 @@ void Actually_Resize_Window_VIDEO_CLIENT(VIDEO_CLIENT *video, int width, int hei
 }
 
 bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) {
-	printf("Total memory: %u bytes\n", getTotalMemory());
-	printf("Free memory: %u bytes\n", getFreeMemory());
-	printf("video Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
-
 	ctx = ctx;
 	//main_loop = NULL;
 	main_loop_running = false;
@@ -107,10 +96,6 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 	relative_mode = false;
 	mouse = Get_Instance_Of_SERVICE_CLIENT_REGISTRY<MOUSE_CLIENT*>(registry);
 	keyboard = Get_Instance_Of_SERVICE_CLIENT_REGISTRY<KEYBOARD_CLIENT*>(registry);
-	//pool = new Queue<VIDEO_ELEMENT*>;
-	
-
-	//memset(nal_buffer, 0, MAX_NAL_SIZE);
 
 	DEBUG(("H.264 Decoder API v%d.%d\n", broadwayGetMajorVersion(),
 		   broadwayGetMinorVersion()));
@@ -135,17 +120,8 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 	Actually_Resize_Window_VIDEO_CLIENT(this, ctx->screen_dim.bw,
 		ctx->screen_dim.h);
 
-	/*
 	if (!Initialize_SOCKET_CLIENT(&socket_client,
-		Recv_Callback_VIDEO_CLIENT, &registry->socket_client_registry,
-		ctx, this)) {
-		
-		return false;
-	}
-	*/
-
-	if (!Initialize_SOCKET_CLIENT(&socket_client,
-		Recv_Callback_VIDEO_CLIENT, registry->ws_client_master,
+		Recv_Callback_VIDEO_CLIENT, registry->socket_client_registry,
 		ctx, this)) {
 		
 		return false;
@@ -156,11 +132,6 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 	
 	emscripten_set_main_loop_arg(
 		[](void *arg) { Main_TCP_Loop_VIDEO_CLIENT(arg); }, this, 0, 0);
-	
-	printf("Total memory: %u bytes\n", getTotalMemory());
-	printf("Free memory: %u bytes\n", getFreeMemory());
-	printf("video Used: %u bytes (%.2f%%)\n", getTotalMemory() - getFreeMemory(), (getTotalMemory() - getFreeMemory()) * 100.0 / getTotalMemory());
-
 	
 	return true;
 }
@@ -247,8 +218,6 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 
 extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height,
 	void *user_data) {
-	
-	//std::cout << "in broadwayOnPictureDecoded new " << width << " " << height << std::endl;
 
 	yuv_to_pixels(buffer, width, height, user_data);
 }

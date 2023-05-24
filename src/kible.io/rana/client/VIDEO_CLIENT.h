@@ -20,6 +20,7 @@
 
 // god have mercy on us
 #define MAX_NAL_SIZE 500000
+#define MAX_ACCUMULATED_FRAMES 5
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))

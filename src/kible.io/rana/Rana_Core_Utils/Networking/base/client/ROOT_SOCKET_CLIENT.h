@@ -5,8 +5,9 @@
 
 struct ROOT_SOCKET_CLIENT {
 	int type;
-	bool initialized;
-	WS_CLIENT_MASTER ws_client_master;
+	union {
+		WS_CLIENT_MASTER *ws_client_master;
+	};
 };
 
 bool Initialize_ROOT_SOCKET_CLIENT(ROOT_SOCKET_CLIENT*, KCONTEXT*, int, char*);

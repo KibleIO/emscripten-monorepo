@@ -39,17 +39,8 @@ bool AUDIO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 		return false;
 	}
 
-	/*
 	if (!Initialize_SOCKET_CLIENT(&socket_client,
-		Recv_Callback_AUDIO_CLIENT, &registry->socket_client_registry,
-		ctx, this)) {
-		
-		return false;
-	}
-	*/
-
-	if (!Initialize_SOCKET_CLIENT(&socket_client,
-		Recv_Callback_AUDIO_CLIENT, registry->ws_client_master,
+		Recv_Callback_AUDIO_CLIENT, registry->socket_client_registry,
 		ctx, this)) {
 		
 		return false;

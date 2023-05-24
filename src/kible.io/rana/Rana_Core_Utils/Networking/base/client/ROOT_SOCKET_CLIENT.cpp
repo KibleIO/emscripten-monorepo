@@ -7,12 +7,12 @@ bool Initialize_ROOT_SOCKET_CLIENT(ROOT_SOCKET_CLIENT *client, KCONTEXT *ctx,
 
 	switch (client->type) {
 		case ROOT_SOCKET_TYPE_WS:
+			client->ws_client_master = new WS_CLIENT_MASTER;
 			if (!Initialize_WS_CLIENT_MASTER(
-				&client->ws_client_master, ctx, port, address)) {
+				client->ws_client_master, ctx, port, address)) {
 				
 				return false;
 			}
-			client->initialized = true;
 			return true;
 		default:
 			return false;
@@ -22,7 +22,8 @@ bool Initialize_ROOT_SOCKET_CLIENT(ROOT_SOCKET_CLIENT *client, KCONTEXT *ctx,
 void Delete_ROOT_SOCKET_CLIENT(ROOT_SOCKET_CLIENT *client) {
 	switch (client->type) {
 		case ROOT_SOCKET_TYPE_WS:
-			Delete_WS_CLIENT_MASTER(&client->ws_client_master);
+			Delete_WS_CLIENT_MASTER(client->ws_client_master);
+			delete client->ws_client_master;
 			break;
 	}
 }

@@ -9,25 +9,9 @@ bool Initialize_SERVICE_CLIENT_REGISTRY(SERVICE_CLIENT_REGISTRY *registry,
 		registry->service_client[i] = NULL;
 	}
 
-	/*
+	registry->socket_client_registry = new SOCKET_CLIENT_REGISTRY;	
 	if (!Initialize_SOCKET_CLIENT_REGISTRY(
-		&registry->socket_client_registry)) {
-		
-		return false;
-	}
-
-	if (!Initialize_ROOT_SOCKET_CLIENT(
-		&registry->socket_client_registry.root_sockets
-		[ROOT_SOCKET_TYPE_WS], ctx, ctx->core_services_backbone_port,
-		(char*) ctx->themis_url.c_str())) {
-		
-		return false;
-	}
-	*/
-	registry->ws_client_master = new WS_CLIENT_MASTER;
-	if (!Initialize_WS_CLIENT_MASTER(
-		registry->ws_client_master, ctx, ctx->core_services_backbone_port,
-		(char*) ctx->themis_url.c_str())) {
+		registry->socket_client_registry, ctx)) {
 		
 		return false;
 	}
