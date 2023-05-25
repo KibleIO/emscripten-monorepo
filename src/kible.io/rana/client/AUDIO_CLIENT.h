@@ -5,10 +5,10 @@
 
 #include <thread>
 
-#include "../Rana_Core_Utils/Utilities/ASSERT.h"
-#include "../Rana_Core_Utils/Utilities/KCONTEXT.h"
+#include <Utilities/ASSERT.h>
+#include <Utilities/KCONTEXT.h>
 #include "../../opus/include/opus.h"
-#include "../Rana_Core_Utils/controller/client/SERVICE_CLIENT.h"
+#include <controller/client/SERVICE_CLIENT.h>
 
 #define FRAME_SIZE_MS 20
 #define SAMPLE_RATE 48000  // Sample rate in Hz

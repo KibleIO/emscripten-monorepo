@@ -1,10 +1,28 @@
 #include "RANA_EXT.h"
-#include "Rana_Core_Utils/Utilities/ASSERT.h"
-#include "Rana_Core_Utils/Utilities/UTILS.h"
+#include <Utilities/ASSERT.h>
+#include <Utilities/UTILS.h>
+#include "LIMITS.h"
+
+void Callback_Launch_Themis_Client(google::protobuf::Message *message,
+	void *user_data) {
+	
+	KCONTEXT *ctx = (KCONTEXT*) user_data;
+	RANA_EXT *rana_ext = new RANA_EXT;
+	
+	if (message == NULL) {
+		std::cout << "request failed" << std::endl;
+	} else {
+		kible::themis::LaunchResponse response;
+		response.CopyFrom(*message);
+
+		ASSERT_E_B((Initialize_RANA_EXT(rana_ext, ctx)),
+		"failed to initialize rana_ext", ctx);
+	}
+}
 
 int main() {
 	KCONTEXT *ctx = new KCONTEXT;
-	RANA_EXT *rana_ext = new RANA_EXT;
+	
 
 	LOG_INFO_CTX(ctx) {
 		ADD_STR_LOG("message", "main begun");
@@ -45,11 +63,7 @@ int main() {
 
 	#endif
 
-	ASSERT_E_R((Launch_THEMIS_CLIENT(ctx)),
-		"failed to launch themis", ctx);
-
-	ASSERT_E_R((Initialize_RANA_EXT(rana_ext, ctx)),
-		"failed to initialize rana_ext", ctx);
+	Launch_THEMIS_CLIENT(ctx, Callback_Launch_Themis_Client, (void*) ctx);
 
 	return 0;
 }

@@ -59,7 +59,7 @@ EM_BOOL On_Message_WS_CLIENT_MASTER(int eventType,
 #endif
 
 bool Initialize_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client, KCONTEXT *ctx,
-	int port, char *ip) {
+	int port, char *address) {
 	
 	//client->ctx = ctx;
 	client->host_count = 0;
@@ -77,18 +77,20 @@ bool Initialize_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client, KCONTEXT *ctx,
 		return false;
 	}
 
-	#ifdef TESTING_BUILD
-	string address = "ws://";
-	#else
-	string address = "wss://";
-	#endif
+	string url;
 
-	address += ip;
-	address += ":";
-	address += to_string(port);
+	if (port == DEFAULT_SSL_PORT) {
+		url += "wss://";
+	} else {
+		url += "ws://";
+	}
+
+	url += address;
+	url += ":";
+	url += to_string(port);
 
 	EmscriptenWebSocketCreateAttributes ws_attrs = {
-		address.c_str(), NULL, EM_FALSE
+		url.c_str(), NULL, EM_FALSE
 	};
 
 	EMSCRIPTEN_WEBSOCKET_T ws = emscripten_websocket_new(&ws_attrs);

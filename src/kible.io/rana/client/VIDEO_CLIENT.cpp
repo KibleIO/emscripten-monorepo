@@ -32,17 +32,6 @@ void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
 	client->pool->push(element);
 }
 
-static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData) {
-	VIDEO_CLIENT *video = (VIDEO_CLIENT*) userData;
-
-	SDL_Event event;
-	event.type = SDL_WINDOWEVENT;
-	event.window.event = SDL_WINDOWEVENT_RESIZED;
-	SDL_PushEvent(&event);
-
-	return 0;
-}
-
 void Actually_Resize_Window_VIDEO_CLIENT(VIDEO_CLIENT *video, int width, int height) {
 	video->width = width;
 	video->height = height;
@@ -57,8 +46,8 @@ void Actually_Resize_Window_VIDEO_CLIENT(VIDEO_CLIENT *video, int width, int hei
 		SDL_TEXTUREACCESS_STREAMING, video->width, video->height);
 }
 
-bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) {
-	ctx = ctx;
+bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx_in, SERVICE_CLIENT_REGISTRY *registry) {
+	ctx = ctx_in;
 	//main_loop = NULL;
 	main_loop_running = false;
 	mouse_count = 1;
@@ -97,9 +86,6 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) 
 		
 		return false;
 	}
-
-	emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW,
-		(void*) this, 0, Emscripten_HandleResize);
 	
 	emscripten_set_main_loop_arg(
 		[](void *arg) { Main_TCP_Loop_VIDEO_CLIENT(arg); }, this, 0, 0);
@@ -278,20 +264,20 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg) {
 							(SDL_bool)video->relative_mode);
 						break;
 					case SDLK_2:
-						//Density_THEMIS_CLIENT(video->ctx->themis_api,
-						//	kible::themis::PixelDensity::PIXELDENSITY_HIGH);
+						Density_THEMIS_CLIENT(video->ctx,
+							kible::themis::PixelDensity::PIXELDENSITY_HIGH);
 						break;
 					case SDLK_3:
-						//Density_THEMIS_CLIENT(video->ctx->themis_api,
-						//	kible::themis::PixelDensity::PIXELDENSITY_MEDIUM);
+						Density_THEMIS_CLIENT(video->ctx,
+							kible::themis::PixelDensity::PIXELDENSITY_MEDIUM);
 						break;
 					case SDLK_4:
-						//Density_THEMIS_CLIENT(video->ctx->themis_api,
-						//	kible::themis::PixelDensity::PIXELDENSITY_LOW);
+						Density_THEMIS_CLIENT(video->ctx,
+							kible::themis::PixelDensity::PIXELDENSITY_LOW);
 						break;
 					case SDLK_5:
-						//Density_THEMIS_CLIENT(video->ctx->themis_api,
-						//	kible::themis::PixelDensity::PIXELDENSITY_PLACEBO);
+						Density_THEMIS_CLIENT(video->ctx,
+							kible::themis::PixelDensity::PIXELDENSITY_PLACEBO);
 						break;
 				}
 			}
@@ -300,11 +286,6 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg) {
 			k_event.value = 0;
 			k_event.event_index = video->keyboard_count++;
 			Send_Event_KEYBOARD_CLIENT(video->keyboard, &k_event);
-			break;
-		case SDL_WINDOWEVENT:
-			if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-				//Report_Resize_Function_VIDEO_CLIENT(video);
-			}
 			break;
 		}
 	}

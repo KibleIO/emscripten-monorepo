@@ -1,10 +1,10 @@
 #ifndef MOUSE_CLIENT_H_
 #define MOUSE_CLIENT_H_
 
-#include "../Rana_Core_Utils/Utilities/ASSERT.h"
-#include "../Rana_Core_Utils/Utilities/KCONTEXT.h"
-#include "../Rana_Core_Utils/controller/client/SERVICE_CLIENT.h"
-#include "../Rana_Core_Utils/Utilities/MOUSE.h"
+#include <Utilities/ASSERT.h>
+#include <Utilities/KCONTEXT.h>
+#include <controller/client/SERVICE_CLIENT.h>
+#include <Utilities/MOUSE.h>
 
 struct MOUSE_CLIENT : public SERVICE_CLIENT {
 	KCONTEXT *ctx;

@@ -5,14 +5,14 @@
 #include <emscripten.h>
 
 #include <thread>
-#include "../Rana_Core_Utils/controller/client/SERVICE_CLIENT.h"
+#include <controller/client/SERVICE_CLIENT.h>
 #include "../LIMITS.h"
-#include "../Rana_Core_Utils/Utilities/ASSERT.h"
-#include "../Rana_Core_Utils/Utilities/KCONTEXT.h"
-#include "../Rana_Core_Utils/Utilities/MOUSE.h"
-#include "../Rana_Core_Utils/Utilities/KEYBOARD.h"
-#include "../Rana_Core_Utils/Utilities/TIMER.h"
-#include "../Rana_Core_Utils/Utilities/CONCURRENT_QUEUE.h"
+#include <Utilities/ASSERT.h>
+#include <Utilities/KCONTEXT.h>
+#include <Utilities/MOUSE.h>
+#include <Utilities/KEYBOARD.h>
+#include <Utilities/TIMER.h>
+#include <Utilities/CONCURRENT_QUEUE.h>
 #include "../../Broadway-H.264-decoder/src/Decoder.h"
 #include "MOUSE_CLIENT.h"
 #include "KEYBOARD_CLIENT.h"

@@ -12,6 +12,7 @@ demo/client/index.html
 protolib
 gen
 demo/protobuf/index.html
+librana.a
 
 .vscode/
 obj/
