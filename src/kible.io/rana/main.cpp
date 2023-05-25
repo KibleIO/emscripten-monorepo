@@ -42,8 +42,6 @@ void Callback_Themis_Edge_Client(google::protobuf::Message *message,
 			themis_url.substr(themis_url.find(delimiter) +
 			delimiter.length());
 
-		std::cout << "derrived url: " << ctx->themis_url << std::endl;
-
 		Launch_THEMIS_CLIENT(ctx, Callback_Launch_Themis_Client,
 			(void*) ctx);
 	}
