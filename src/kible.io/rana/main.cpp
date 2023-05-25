@@ -22,14 +22,13 @@ void Callback_Launch_Themis_Client(google::protobuf::Message *message,
 
 int main() {
 	KCONTEXT *ctx = new KCONTEXT;
-	
 
-	LOG_INFO_CTX(ctx) {
-		ADD_STR_LOG("message", "main begun");
-		ADD_STR_LOG("version", SOFTWARE_VERSION);
-	}
+	Initialize_KCONTEXT(ctx, __CORE_SYSTEM__);
 
-	Initialize_KCONTEXT(ctx);
+	LOGGER_INFO(ctx, {
+		{"message", "main begun"},
+		{"version", SOFTWARE_VERSION},
+	});
 
 	ctx->core_services_backbone = ROOT_SOCKET_TYPE_WS;
 

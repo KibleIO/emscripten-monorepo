@@ -4,14 +4,15 @@
 #include <string>
 #include "SCREEN_DIM.h"
 #include "UTILS.h"
+#include "LOGGING.h"
 
-#define ADD_STR_LOG(key, obj) cout << obj << endl;
-#define ADD_INT_LOG(key, obj)
-#define LOG_INFO_CTX(ctx)
-#define LOG_WARN_CTX(ctx)
-#define LOG_ERROR_CTX(ctx)
+#define LOGGER_INFO(ctx, ...) Log_LOGGING(&ctx->logging, __VA_ARGS__, "INFO", __FILE__, __LINE__, __func__)
+#define LOGGER_WARN(ctx, ...) Log_LOGGING(&ctx->logging, __VA_ARGS__, "WARN", __FILE__, __LINE__, __func__)
+#define LOGGER_ERROR(ctx, ...) Log_LOGGING(&ctx->logging, __VA_ARGS__, "ERROR", __FILE__, __LINE__, __func__)
 
 struct KCONTEXT{
+	char trace_uuid[UUID_STR_SIZE];
+	char core_system[CORE_SYSTEM_STR_SIZE];
 	SCREEN_DIM screen_dim;
 	bool screen_dim_changed;
 	std::string uuid;
@@ -20,9 +21,10 @@ struct KCONTEXT{
 	int core_services_backbone;
 	int core_services_backbone_port;
 	int http_services_backbone_port;
+	LOGGING logging;
 };
 
-void Initialize_KCONTEXT(KCONTEXT*);
+void Initialize_KCONTEXT(KCONTEXT*, char*);
 SCREEN_DIM Get_Screen_Dim_KCONTEXT(KCONTEXT*);
 void Set_Screen_Dim_KCONTEXT(KCONTEXT*, SCREEN_DIM);
 

@@ -79,6 +79,8 @@ void Get_Cookie(char *str_out) {
 	free(str);
 }
 
+
+
 void Get_Url(char *str_out) {
 	int characters_to_copy;
 
@@ -97,10 +99,41 @@ void Get_Url(char *str_out) {
 	free(str);
 }
 
+void generate_uuid(char *str_out) {
+	int characters_to_copy;
+
+	char *str = (char*)EM_ASM_PTR({
+		return stringToNewUTF8(crypto.randomUUID());
+	});
+
+	characters_to_copy = strlen(str);
+	if (characters_to_copy > UUID_STR_SIZE) {
+		characters_to_copy = UUID_STR_SIZE;
+	}
+
+	strncpy(str_out, str, characters_to_copy);
+  	str_out[characters_to_copy] = '\0';
+
+	free(str);
+}
+
 int64_t getTime() {
 	timeval start;
 	gettimeofday(&start, NULL);
 	return ((start.tv_sec) * 1000 + start.tv_usec / 1000.0) + 0.5;
+}
+
+void get_current_time(char *str) {
+	timeval tv;
+	time_t nowtime;
+	tm *nowtm;
+	char tmbuf[64], buf[64];
+
+	gettimeofday(&tv, NULL);
+	nowtime = tv.tv_sec;
+	nowtm = gmtime(&nowtime);
+	strftime(tmbuf, sizeof tmbuf, "%Y-%m-%dT%H:%M:%S", nowtm);
+	snprintf(str, 64, "%s.%09ldZ", tmbuf, tv.tv_usec);
 }
 
 unsigned int getTotalMemory()

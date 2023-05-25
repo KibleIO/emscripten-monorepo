@@ -13,10 +13,12 @@
 
 using namespace std;
 
+#define UUID_STR_SIZE 37
+#define CORE_SYSTEM_STR_SIZE 37
+#define CURRENT_TIME_LEN 100
 #define MAX_COOKIE_SIZE 256
 #define MINIMUM_WIDTH 480
 #define MINIMUM_HEIGHT 480
-
 #define MAXIMUM_WIDTH 1920
 #define MAXIMUM_HEIGHT 1080
 
@@ -60,5 +62,9 @@ int64_t getTime();
 unsigned int getTotalMemory();
 
 unsigned int getFreeMemory();
+
+void get_current_time(char*);
+
+void generate_uuid(char*);
 
 #endif

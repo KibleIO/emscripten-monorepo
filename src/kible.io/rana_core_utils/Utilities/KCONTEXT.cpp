@@ -1,6 +1,6 @@
 #include "KCONTEXT.h"
 
-void Initialize_KCONTEXT(KCONTEXT *ctx) {
+void Initialize_KCONTEXT(KCONTEXT *ctx, char *core_system) {
 	char cookie[MAX_COOKIE_SIZE];
 
 	ctx->screen_dim_changed = false;
@@ -10,6 +10,15 @@ void Initialize_KCONTEXT(KCONTEXT *ctx) {
 
 	Get_Url(cookie);
 	ctx->url = cookie;
+
+	generate_uuid(ctx->trace_uuid);
+	strcpy(ctx->core_system, core_system);
+
+	if (!Initialize_LOGGING(&ctx->logging, std::string(ctx->core_system),
+		std::string(ctx->trace_uuid), ctx->uuid)) {
+		
+		std::cout << "failed to initialize logger" << std::endl;
+	}
 }
 
 SCREEN_DIM Get_Screen_Dim_KCONTEXT(KCONTEXT *ctx) { return ctx->screen_dim; }
