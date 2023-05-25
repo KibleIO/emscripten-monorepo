@@ -58,7 +58,7 @@ void HTTP_Failure1(emscripten_fetch_t *fetch) {
 
 void HTTP_Request(char *url, char *data, HTTP_Request_Callback callback,
 	void *user_ptr) {
-	
+
 	emscripten_fetch_attr_t attr;
 	emscripten_fetch_attr_init(&attr);
 	strcpy(attr.requestMethod, "POST");
@@ -69,7 +69,8 @@ void HTTP_Request(char *url, char *data, HTTP_Request_Callback callback,
 	attr.userData = user_ptr;
 	attr.requestData = data;
 	attr.requestDataSize = strlen(attr.requestData);
-	attr.requestHeaders = JSON_CONTENT_TYPE;
+	const char * headers[] = {"Content-Type", "application/json", 0};
+   	attr.requestHeaders = headers;
 
 	emscripten_fetch(&attr, url);
 }

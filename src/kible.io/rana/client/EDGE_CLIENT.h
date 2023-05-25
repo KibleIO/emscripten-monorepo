@@ -4,7 +4,6 @@
 #include <string>
 #include "../pb/EDGE_CLIENT.h"
 
-void Themis_EDGE_CLIENT(std::string, std::string, std::string*,
-	HTTP_Protobuf_Callback, void*);
+void Themis_EDGE_CLIENT(std::string, std::string, HTTP_Protobuf_Callback, void*);
 
 #endif

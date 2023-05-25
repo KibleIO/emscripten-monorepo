@@ -1,8 +1,7 @@
 #include "EDGE_CLIENT.h"
 
 void Themis_EDGE_CLIENT(std::string address, std::string session_id,
-	std::string* themis_url, HTTP_Protobuf_Callback callback,
-	void *user_data) {
+	HTTP_Protobuf_Callback callback, void *user_data) {
 	
 	pb::EDGE_CLIENT client;
 	kible::edge::ThemisRequest request;

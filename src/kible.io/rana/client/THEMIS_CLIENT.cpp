@@ -15,7 +15,7 @@ void Launch_THEMIS_CLIENT(KCONTEXT *ctx, HTTP_Protobuf_Callback callback,
 
 	#else
 
-	url = std::string("https://") + ctx->themis_url + ":" + std::to_string(ctx->http_services_backbone_port);
+	url = std::string("https://") + ctx->themis_url;
 
 	#endif
 
@@ -44,7 +44,7 @@ void Ping_THEMIS_CLIENT(KCONTEXT *ctx) {
 
 	#else
 
-	url = std::string("https://") + ctx->themis_url + ":" + std::to_string(ctx->http_services_backbone_port);
+	url = std::string("https://") + ctx->themis_url;
 
 	#endif
 
@@ -67,7 +67,7 @@ void Density_THEMIS_CLIENT(KCONTEXT *ctx, kible::themis::PixelDensity density) {
 
 	#else
 
-	url = std::string("https://") + ctx->themis_url + ":" + std::to_string(ctx->http_services_backbone_port);
+	url = std::string("https://") + ctx->themis_url;
 
 	#endif
 
@@ -89,7 +89,7 @@ void Dimensions_THEMIS_CLIENT(KCONTEXT *ctx, int width, int height) {
 
 	#else
 
-	url = std::string("https://") + ctx->themis_url + ":" + std::to_string(ctx->http_services_backbone_port);
+	url = std::string("https://") + ctx->themis_url;
 
 	#endif
 
