@@ -55,6 +55,7 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx_in, SERVICE_CLIENT_REGISTRY *registr
 	texture = NULL;
 	ctrl_clicked = false;
 	relative_mode = false;
+	fullscreen = false;
 	mouse = Get_Instance_Of_SERVICE_CLIENT_REGISTRY<MOUSE_CLIENT*>(registry);
 	keyboard = Get_Instance_Of_SERVICE_CLIENT_REGISTRY<KEYBOARD_CLIENT*>(registry);
 
@@ -278,6 +279,21 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg) {
 					case SDLK_5:
 						Density_THEMIS_CLIENT(video->ctx,
 							kible::themis::PixelDensity::PIXELDENSITY_PLACEBO);
+						break;
+					case SDLK_6:
+						video->fullscreen =
+							!video->fullscreen;
+
+						if (video->fullscreen) {
+							EmscriptenFullscreenStrategy s;
+							memset(&s, 0, sizeof(s));
+							s.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_DEFAULT;
+							s.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
+							s.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
+							emscripten_request_fullscreen_strategy("#canvas", 1, &s);
+						} else {
+							emscripten_exit_fullscreen();
+						}
 						break;
 				}
 			}

@@ -56,6 +56,7 @@ struct VIDEO_CLIENT : public SERVICE_CLIENT {
 	float y_scale;
 	bool ctrl_clicked;
 	bool relative_mode;
+	bool fullscreen;
 
 	MOUSE_CLIENT *mouse;
 	KEYBOARD_CLIENT *keyboard;
