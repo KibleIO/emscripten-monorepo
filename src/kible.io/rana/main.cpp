@@ -1,31 +1,81 @@
 #include "RANA_EXT.h"
-#include "Rana_Core_Utils/Utilities/ASSERT.h"
+#include <Utilities/ASSERT.h>
+#include <Utilities/UTILS.h>
+#include "LIMITS.h"
+#include "client/EDGE_CLIENT.h"
+
+void Callback_Launch_Themis_Client(google::protobuf::Message *message,
+	void *user_data) {
+	
+	KCONTEXT *ctx = (KCONTEXT*) user_data;
+	RANA_EXT *rana_ext = new RANA_EXT;
+	
+	if (message == NULL) {
+		std::cout << "request failed" << std::endl;
+	} else {
+		kible::themis::LaunchResponse response;
+		response.CopyFrom(*message);
+
+		ASSERT_E_B((Initialize_RANA_EXT(rana_ext, ctx)),
+		"failed to initialize rana_ext", ctx);
+	}
+}
+
+void Callback_Themis_Edge_Client(google::protobuf::Message *message,
+	void *user_data) {
+	
+	KCONTEXT *ctx = (KCONTEXT*) user_data;
+	RANA_EXT *rana_ext = new RANA_EXT;
+	std::string themis_url;
+
+	if (message == NULL) {
+		std::cout << "request failed" << std::endl;
+	} else {
+		kible::edge::ThemisResponse response;
+		response.CopyFrom(*message);
+
+		themis_url = response.address();
+
+		std::string delimiter = "alienhub.xyz";
+		ctx->themis_url = themis_url.substr(0,
+			themis_url.find(delimiter)) + ctx->url +
+			themis_url.substr(themis_url.find(delimiter) +
+			delimiter.length());
+
+		Launch_THEMIS_CLIENT(ctx, Callback_Launch_Themis_Client,
+			(void*) ctx);
+	}
+}
 
 int main() {
-	KCONTEXT ctx;
-	RANA_EXT rana_ext;
+	KCONTEXT *ctx = new KCONTEXT;
 
-	LOG_INFO_CTX(&ctx) {
-		ADD_STR_LOG("message", "main begun");
-		ADD_STR_LOG("version", SOFTWARE_VERSION);
-	}
+	Initialize_KCONTEXT(ctx, __CORE_SYSTEM__);
 
-	Initialize_KCONTEXT(&ctx);
+	LOGGER_INFO(ctx, {
+		{"message", "main begun"},
+		{"version", SOFTWARE_VERSION},
+	});
 
-	ASSERT_E_R((Initialize_RANA_EXT(&rana_ext, &ctx)),
-			   "failed to initialize rana_ext", &ctx);
+	ctx->core_services_backbone = ROOT_SOCKET_TYPE_WS;
 
-	if (!Connect_To_Themis_RANA_EXT(&rana_ext)) {
-		Disconnect_From_Themis_RANA_EXT(&rana_ext, false);
+	#ifdef TESTING_BUILD
 
-		LOG_INFO_CTX(&ctx) {
-			ADD_STR_LOG("message", "failed to connect to Themis");
-		}
+	ctx->core_services_backbone_port = THEMIS_PORT;
+	ctx->http_services_backbone_port = THEMIS_PORT_HTTP;
 
-		return 0;
-	}
+	ctx->themis_url = "localhost";
 
-	LOG_INFO_CTX(&ctx) { ADD_STR_LOG("message", "clean exit"); }
+	Launch_THEMIS_CLIENT(ctx, Callback_Launch_Themis_Client, (void*) ctx);
+
+	#else
+
+	ctx->core_services_backbone_port = 443;
+	ctx->http_services_backbone_port = 443;
+	Themis_EDGE_CLIENT(std::string("https://") + ctx->url, ctx->uuid,
+		Callback_Themis_Edge_Client, (void*) ctx);
+
+	#endif
 
 	return 0;
 }

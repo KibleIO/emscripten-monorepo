@@ -5,6 +5,13 @@
 #include <string>
 #include "HTTP.h"
 
+typedef void (*HTTP_Protobuf_Callback)(google::protobuf::Message*, void*);
+
+struct CALLBACK_WRAPPER {
+	HTTP_Protobuf_Callback callback;
+	void *user_data;
+};
+
 #define HTTP_Protobuf_Init_Delete(package_actual, service_actual_name,\
 	path_actual)\
 	bool pb::Initialize_##service_actual_name##_CLIENT(\
@@ -37,32 +44,62 @@ void pb::Delete_##service_actual_name##_CLIENT(\
 
 #define HTTP_Protobuf_Endpoint(service_actual_name, endpoint_name,\
 	request, response)\
-	bool endpoint_name##_##service_actual_name##_CLIENT(\
-		service_actual_name##_CLIENT*, request*, response*);\
-
+	void endpoint_name##_##service_actual_name##_CLIENT(\
+		service_actual_name##_CLIENT*, request*, \
+		HTTP_Protobuf_Callback, void*);\
+	void endpoint_name##_##service_actual_name##_CLIENT(\
+		service_actual_name##_CLIENT*, request*);\
 
 #define HTTP_Protobuf_Endpoint_Definition(service_actual_name, endpoint_name,\
 	request_obj, response_obj)\
-	bool pb::endpoint_name##_##service_actual_name##_CLIENT(pb::service_actual_name##_CLIENT *client,\
-		request_obj *request, response_obj *response) {\
+	void endpoint_name##_##service_actual_name##_CLIENT_CALLBACK(\
+		emscripten_fetch_t *fetch) {\
+		CALLBACK_WRAPPER *client = (CALLBACK_WRAPPER*) fetch->userData;\
+		if (fetch->status == HTTP_SUCCESS_STATUS) {\
+			response_obj response;\
+			google::protobuf::util::JsonParseOptions options;\
+			JsonStringToMessage(std::string(fetch->data), \
+			&response, options);\
+			client->callback(&response, client->user_data);\
+		} else {\
+			client->callback(NULL, client->user_data);\
+		}\
+		delete client;\
+		emscripten_fetch_close(fetch);\
+	}\
+	void pb::endpoint_name##_##service_actual_name##_CLIENT(\
+		pb::service_actual_name##_CLIENT *client, request_obj *request,\
+		HTTP_Protobuf_Callback callback_func, void *user_data) {\
+		CALLBACK_WRAPPER *callback = new CALLBACK_WRAPPER;\
+		callback->callback = callback_func;\
+		callback->user_data = user_data;\
 		std::string json_string;\
 		google::protobuf::util::JsonPrintOptions options;\
 		options.add_whitespace = false;\
 		options.always_print_primitive_fields = true;\
 		MessageToJsonString(*request, &json_string, options);\
-		char response_raw[MAX_HTTP_RESPONSE_SIZE];\
 		std::string request_address = client->service_address + \
 			client->service_path + "/" + \
 			client->service_package + "." + client->service_name + \
 			"/" + #endpoint_name;\
-		if (!HTTP_Request((char*) request_address.c_str(), "POST",\
+		HTTP_Request((char*) request_address.c_str(),\
 			(char*) json_string.c_str(),\
-			response_raw)) {\
-			return false;\
-		}\
-		google::protobuf::util::JsonParseOptions options2;\
-		JsonStringToMessage(std::string(response_raw), response, options2);\
-		return true;\
+			endpoint_name##_##service_actual_name##_CLIENT_CALLBACK,\
+			(void*)callback);\
+	}\
+	void pb::endpoint_name##_##service_actual_name##_CLIENT(\
+		pb::service_actual_name##_CLIENT *client, request_obj *request) {\
+		std::string json_string;\
+		google::protobuf::util::JsonPrintOptions options;\
+		options.add_whitespace = false;\
+		options.always_print_primitive_fields = true;\
+		MessageToJsonString(*request, &json_string, options);\
+		std::string request_address = client->service_address + \
+			client->service_path + "/" + \
+			client->service_package + "." + client->service_name + \
+			"/" + #endpoint_name;\
+		HTTP_Request((char*) request_address.c_str(),\
+			(char*) json_string.c_str());\
 	}\
 
 #endif
