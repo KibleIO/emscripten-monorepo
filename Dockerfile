@@ -18,8 +18,6 @@ RUN ./configure --prefix=/usr
 RUN make
 RUN make install
 WORKDIR /root/protobuf-emscripten/3.1.0
-RUN touch hello
-RUN git pull
 RUN sh autogen.sh
 RUN emconfigure ./configure
 RUN emmake make

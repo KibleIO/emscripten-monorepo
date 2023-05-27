@@ -1,7 +1,7 @@
 #include "MOUSE_CLIENT.h"
 
 void Recv_Callback_MOUSE_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
-	//nop
+	//noop
 }
 
 bool MOUSE_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) {

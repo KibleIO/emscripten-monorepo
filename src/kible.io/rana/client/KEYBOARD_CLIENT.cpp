@@ -1,7 +1,7 @@
 #include "KEYBOARD_CLIENT.h"
 
 void Recv_Callback_KEYBOARD_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
-	//nop
+	//nopp
 }
 
 bool KEYBOARD_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) {

@@ -20,7 +20,6 @@ void Recv_Callback_AUDIO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
 }
 
 bool AUDIO_CLIENT::Initialize(KCONTEXT *ctx, SERVICE_CLIENT_REGISTRY *registry) {
-	printf("Total memory: %u bytes\n", getTotalMemory());
 	ctx = ctx;
 	//main_loop = NULL;
 	main_loop_running = false;
