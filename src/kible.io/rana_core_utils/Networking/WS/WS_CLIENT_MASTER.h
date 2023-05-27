@@ -20,7 +20,7 @@
 #define MAX_HOSTS 20
 #define WEB_SOCKET_TIME_OUT 10
 #define WS_SLEEP_TIME 1
-#define DEFAULT_SSL_PORT 433
+#define DEFAULT_SSL_PORT 443
 
 struct WEBSOCKET_ELEMENT {
 	int32_t		size;

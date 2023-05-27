@@ -80,9 +80,9 @@ bool Initialize_WS_CLIENT_MASTER(WS_CLIENT_MASTER *client, KCONTEXT *ctx,
 	string url;
 
 	if (port == DEFAULT_SSL_PORT) {
-		url = string("ws://") + address;
+		url = string("wss://") + address;
 	} else {
-		url = string("wss://") + address + ":" + to_string(port);
+		url = string("ws://") + address + ":" + to_string(port);
 	}
 
 	EmscriptenWebSocketCreateAttributes ws_attrs = {
