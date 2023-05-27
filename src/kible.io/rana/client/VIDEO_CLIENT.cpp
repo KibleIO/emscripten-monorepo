@@ -14,24 +14,6 @@ void Decode_Buffer_VIDEO_CLIENT(VIDEO_CLIENT *video, char *buffer, int size) {
 	} while (video->decoder.decInput.dataLen > 0);
 }
 
-void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
-	VIDEO_CLIENT *client = (VIDEO_CLIENT*) user_ptr;
-
-	if (client->pool->size() > MAX_ACCUMULATED_FRAMES) {
-		std::cout << "dropping frame" << std::endl;
-		return;
-	}
-
-	VIDEO_ELEMENT *element = new VIDEO_ELEMENT;
-
-	element->bytes = new uint8_t[element->size];
-	element->size = buffer_size;
-
-	memcpy(element->bytes, buffer, buffer_size);
-
-	client->pool->push(element);
-}
-
 void Actually_Resize_Window_VIDEO_CLIENT(VIDEO_CLIENT *video, int width, int height) {
 	video->width = width;
 	video->height = height;
@@ -82,14 +64,11 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx_in, SERVICE_CLIENT_REGISTRY *registr
 		ctx->screen_dim.h);
 
 	if (!Initialize_SOCKET_CLIENT(&socket_client,
-		Recv_Callback_VIDEO_CLIENT, registry->socket_client_registry,
+		Main_TCP_Loop_VIDEO_CLIENT, registry->socket_client_registry,
 		ctx, this)) {
 		
 		return false;
 	}
-	
-	emscripten_set_main_loop_arg(
-		[](void *arg) { Main_TCP_Loop_VIDEO_CLIENT(arg); }, this, 0, 0);
 	
 	return true;
 }
@@ -181,12 +160,19 @@ extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height,
 
 extern void broadwayOnHeadersDecoded() { printf("header decoded\n"); }
 
-void Main_TCP_Loop_VIDEO_CLIENT(void *arg) {
+void Main_TCP_Loop_VIDEO_CLIENT(void *arg, char *buffer, int buffer_size) {
 	VIDEO_CLIENT *video = (VIDEO_CLIENT *)arg;
 
 	MOUSE_EVENT_T m_event;
 	KEYBOARD_EVENT_T k_event;
-	VIDEO_ELEMENT *element;
+
+	if (video->main_loop_running) {
+		std::cout << "dropping" << std::endl;
+		return;
+	}
+
+	video->main_loop_running = true;
+
 
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -295,6 +281,12 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg) {
 							emscripten_exit_fullscreen();
 						}
 						break;
+					case SDLK_7:
+						FPS_THEMIS_CLIENT(video->ctx, 30);
+						break;
+					case SDLK_8:
+						FPS_THEMIS_CLIENT(video->ctx, 60);
+						break;
 				}
 			}
 
@@ -306,15 +298,9 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg) {
 		}
 	}
 
-		
-	if (video->pool->size() > 0) {
-		video->pool->pop(element);
+	Decode_Buffer_VIDEO_CLIENT(video, (char*) buffer, buffer_size);
 
-		Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
-
-		delete [] element->bytes;
-		delete element;
-	}
+	video->main_loop_running = false;
 }
 
 /*
