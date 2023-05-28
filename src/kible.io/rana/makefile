@@ -4,7 +4,7 @@ CC = em++ -O3 -sDISABLE_EXCEPTION_CATCHING=1 -sUSE_SDL=2
 BC = index.bc
 EXEC = index.js
 #SOURCES = main.cpp Rana_Core_Utils/Utilities/UTILS.cpp
-SOURCES = $(wildcard *.cpp) $(wildcard */*.cpp) $(wildcard ../gen/*/*.cpp)
+SOURCES = $(wildcard *.cpp) $(wildcard */*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
 CC_BUILD_FLAGS = -I../protolib -I../gen -I../rana_core_utils
