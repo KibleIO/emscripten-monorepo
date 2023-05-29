@@ -100,6 +100,8 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 	void *user_data) {
 
 	VIDEO_CLIENT *video = (VIDEO_CLIENT*) user_data;
+
+	if (!video->main_loop_running) return;
 	
 	if (video->decoder.decInfo.croppingFlag) {
 		if (video->decoder.decInfo.cropParams.cropOutWidth != video->width ||
@@ -317,6 +319,8 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg) {
 	
 	while (video->pool->size() > 0) {
 		video->pool->pop(element);
+
+		video->main_loop_running = (video->pool->size() == 0);
 
 		Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
 
