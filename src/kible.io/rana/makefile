@@ -1,8 +1,8 @@
 #use for debugging
 #CC = em++ -O0 -sUSE_SDL=2 -sUSE_PTHREADS --profiling-funcs -sSAFE_HEAP=1 -sASSERTIONS=1 -sSTACK_OVERFLOW_CHECK=2 -gsource-map
 CC = em++ -O3 -sDISABLE_EXCEPTION_CATCHING=1 -sUSE_SDL=2
-BC = index.bc
-EXEC = index.js
+BC = out.bc
+EXEC = out.html
 #SOURCES = main.cpp Rana_Core_Utils/Utilities/UTILS.cpp
 SOURCES = $(wildcard *.cpp) $(wildcard */*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
@@ -23,7 +23,7 @@ CXXFLAGS = -lwebsocket.js -sASYNCIFY -sTOTAL_MEMORY=4000MB -sUSE_WEBGL2=1 \
 
 default: $(OBJECTS)
 	$(CC) -r $(OBJECTS) -o $(BC)
-	$(CC) $(BC) -o $(EXEC) $(CXXFLAGS)
+	$(CC) $(BC) -o $(EXEC) $(CXXFLAGS) --shell-file custom_shell.html
 
 # Main target
 $(EXEC): $(OBJECTS)
