@@ -3,7 +3,7 @@
 
 #include <string>
 #include <Utilities/KCONTEXT.h>
-#include "../pb/THEMIS_CLIENT.h"
+#include <pb/THEMIS_CLIENT.h>
 #include "KEEP_ALIVE_CLIENT.h"
 #include "../LIMITS.h"
 
