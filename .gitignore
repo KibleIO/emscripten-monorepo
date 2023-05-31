@@ -13,6 +13,7 @@ protolib
 gen
 demo/protobuf/index.html
 *.a
+index.html
 
 .vscode/
 obj/

@@ -3,6 +3,7 @@
 #include <Utilities/UTILS.h>
 #include "LIMITS.h"
 #include "client/EDGE_CLIENT.h"
+#include "utils/UTILS.h"
 
 void Callback_Launch_Themis_Client(google::protobuf::Message *message,
 	void *user_data) {
@@ -11,6 +12,7 @@ void Callback_Launch_Themis_Client(google::protobuf::Message *message,
 	RANA_EXT *rana_ext = new RANA_EXT;
 	
 	if (message == NULL) {
+		Show_Error_Message(std::string("Failed to communicate with Themis"));
 		std::cout << "request failed" << std::endl;
 	} else {
 		kible::themis::LaunchResponse response;
@@ -29,6 +31,7 @@ void Callback_Themis_Edge_Client(google::protobuf::Message *message,
 	std::string themis_url;
 
 	if (message == NULL) {
+		Show_Error_Message(std::string("Failed to communicate with Edge"));
 		std::cout << "request failed" << std::endl;
 	} else {
 		kible::edge::ThemisResponse response;

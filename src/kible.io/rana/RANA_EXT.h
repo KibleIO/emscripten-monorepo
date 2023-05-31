@@ -9,6 +9,7 @@
 #include "client/AUDIO_CLIENT.h"
 #include "client/KEEP_ALIVE_CLIENT.h"
 #include "LIMITS.h"
+#include "utils/UTILS.h"
 
 struct RANA_EXT {
 	SERVICE_CLIENT_REGISTRY registry;
