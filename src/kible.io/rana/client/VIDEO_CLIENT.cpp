@@ -183,8 +183,6 @@ extern void broadwayOnPictureDecoded(u8 *buffer, u32 width, u32 height,
 
 extern void broadwayOnHeadersDecoded() { printf("header decoded\n"); }
 
-TIMER t;
-
 void Main_TCP_Loop_VIDEO_CLIENT(void *arg) {
 	VIDEO_CLIENT *video = (VIDEO_CLIENT *)arg;
 

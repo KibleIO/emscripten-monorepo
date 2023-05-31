@@ -83,15 +83,15 @@ void Dimensions_THEMIS_CLIENT(KCONTEXT *ctx, int width, int height) {
 	std::string url;
 	kible::themis::DimensionsRequest request;
 
-	#ifdef TESTING_BUILD
+#ifdef TESTING_BUILD
 
 	url = std::string("http://") + ctx->themis_url + ":" + std::to_string(ctx->http_services_backbone_port);
 
-	#else
+#else
 
 	url = std::string("https://") + ctx->themis_url;
 
-	#endif
+#endif
 
 	request.set_width(width);
 	request.set_height(height);
