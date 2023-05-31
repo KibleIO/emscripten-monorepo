@@ -20,7 +20,7 @@
 
 // god have mercy on us
 #define MAX_NAL_SIZE 500000
-#define MAX_ACCUMULATED_FRAMES 5
+#define MAX_ACCUMULATED_FRAMES 30
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
@@ -62,6 +62,7 @@ struct VIDEO_CLIENT : public SERVICE_CLIENT {
 	KEYBOARD_CLIENT *keyboard;
 
 	SOCKET_CLIENT socket_client;
+
 	Queue<VIDEO_ELEMENT*>	*pool;
 
 	bool Initialize(KCONTEXT*, SERVICE_CLIENT_REGISTRY*) override;

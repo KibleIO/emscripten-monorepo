@@ -83,6 +83,29 @@ void Dimensions_THEMIS_CLIENT(KCONTEXT *ctx, int width, int height) {
 	std::string url;
 	kible::themis::DimensionsRequest request;
 
+#ifdef TESTING_BUILD
+
+	url = std::string("http://") + ctx->themis_url + ":" + std::to_string(ctx->http_services_backbone_port);
+
+#else
+
+	url = std::string("https://") + ctx->themis_url;
+
+#endif
+
+	request.set_width(width);
+	request.set_height(height);
+
+	pb::Initialize_THEMIS_CLIENT(&client_t, url);
+	pb::Dimensions_THEMIS_CLIENT(&client_t, &request);
+	pb::Delete_THEMIS_CLIENT(&client_t);
+}
+
+void FPS_THEMIS_CLIENT(KCONTEXT *ctx, int fps) {
+	pb::THEMIS_CLIENT client_t;
+	std::string url;
+	kible::themis::FPSRequest request;
+
 	#ifdef TESTING_BUILD
 
 	url = std::string("http://") + ctx->themis_url + ":" + std::to_string(ctx->http_services_backbone_port);
@@ -93,10 +116,9 @@ void Dimensions_THEMIS_CLIENT(KCONTEXT *ctx, int width, int height) {
 
 	#endif
 
-	request.set_width(width);
-	request.set_height(height);
+	request.set_fps(fps);
 
 	pb::Initialize_THEMIS_CLIENT(&client_t, url);
-	pb::Dimensions_THEMIS_CLIENT(&client_t, &request);
+	pb::FPS_THEMIS_CLIENT(&client_t, &request);
 	pb::Delete_THEMIS_CLIENT(&client_t);
 }

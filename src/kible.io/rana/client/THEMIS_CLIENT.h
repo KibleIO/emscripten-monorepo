@@ -11,5 +11,6 @@ void Launch_THEMIS_CLIENT(KCONTEXT*, HTTP_Protobuf_Callback, void*);
 void Ping_THEMIS_CLIENT(KCONTEXT*);
 void Density_THEMIS_CLIENT(KCONTEXT*, kible::themis::PixelDensity);
 void Dimensions_THEMIS_CLIENT(KCONTEXT*, int, int);
+void FPS_THEMIS_CLIENT(KCONTEXT*, int);
 
 #endif

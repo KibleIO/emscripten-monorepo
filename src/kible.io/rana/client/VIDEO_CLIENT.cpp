@@ -14,24 +14,6 @@ void Decode_Buffer_VIDEO_CLIENT(VIDEO_CLIENT *video, char *buffer, int size) {
 	} while (video->decoder.decInput.dataLen > 0);
 }
 
-void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
-	VIDEO_CLIENT *client = (VIDEO_CLIENT*) user_ptr;
-
-	if (client->pool->size() > MAX_ACCUMULATED_FRAMES) {
-		std::cout << "dropping frame" << std::endl;
-		return;
-	}
-
-	VIDEO_ELEMENT *element = new VIDEO_ELEMENT;
-
-	element->bytes = new uint8_t[element->size];
-	element->size = buffer_size;
-
-	memcpy(element->bytes, buffer, buffer_size);
-
-	client->pool->push(element);
-}
-
 void Actually_Resize_Window_VIDEO_CLIENT(VIDEO_CLIENT *video, int width, int height) {
 	video->width = width;
 	video->height = height;
@@ -44,6 +26,24 @@ void Actually_Resize_Window_VIDEO_CLIENT(VIDEO_CLIENT *video, int width, int hei
 
 	video->texture = SDL_CreateTexture(video->renderer, SDL_PIXELFORMAT_IYUV,
 		SDL_TEXTUREACCESS_STREAMING, video->width, video->height);
+}
+
+void Recv_Callback_VIDEO_CLIENT(void *user_ptr, char *buffer, int buffer_size) {
+	VIDEO_CLIENT *client = (VIDEO_CLIENT*) user_ptr;
+
+	if (client->pool->size() > MAX_ACCUMULATED_FRAMES) {
+		std::cout << "dropping frame" << std::endl;
+		return;
+	}
+
+	VIDEO_ELEMENT *element = new VIDEO_ELEMENT;
+
+	element->size = buffer_size;
+	element->bytes = new uint8_t[element->size];
+
+	memcpy(element->bytes, buffer, buffer_size);
+
+	client->pool->push(element);
 }
 
 bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx_in, SERVICE_CLIENT_REGISTRY *registry) {
@@ -87,7 +87,7 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx_in, SERVICE_CLIENT_REGISTRY *registr
 		
 		return false;
 	}
-	
+
 	emscripten_set_main_loop_arg(
 		[](void *arg) { Main_TCP_Loop_VIDEO_CLIENT(arg); }, this, 0, 0);
 	
@@ -100,6 +100,8 @@ void yuv_to_pixels(uint8_t *src, u32 src_width, u32 src_height,
 	void *user_data) {
 
 	VIDEO_CLIENT *video = (VIDEO_CLIENT*) user_data;
+
+	if (!video->main_loop_running) return;
 	
 	if (video->decoder.decInfo.croppingFlag) {
 		if (video->decoder.decInfo.cropParams.cropOutWidth != video->width ||
@@ -295,6 +297,12 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg) {
 							emscripten_exit_fullscreen();
 						}
 						break;
+					case SDLK_7:
+						FPS_THEMIS_CLIENT(video->ctx, 30);
+						break;
+					case SDLK_8:
+						FPS_THEMIS_CLIENT(video->ctx, 60);
+						break;
 				}
 			}
 
@@ -306,9 +314,11 @@ void Main_TCP_Loop_VIDEO_CLIENT(void *arg) {
 		}
 	}
 
-		
-	if (video->pool->size() > 0) {
+	
+	while (video->pool->size() > 0) {
 		video->pool->pop(element);
+
+		video->main_loop_running = (video->pool->size() == 0);
 
 		Decode_Buffer_VIDEO_CLIENT(video, (char*) element->bytes, element->size);
 
