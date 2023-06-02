@@ -8,8 +8,12 @@ bool Initialize_RANA_EXT(RANA_EXT *rana, KCONTEXT *ctx) {
 		new AUDIO_CLIENT,
 		new KEEP_ALIVE_CLIENT)) {
 		
+
+		Show_Error_Message(std::string("Failed to initialize Rana"));
 		return false;
 	}
+
+	Hide_Loading_Wheel();
 
 	return true;
 }

@@ -79,8 +79,6 @@ void Get_Cookie(char *str_out) {
 	free(str);
 }
 
-
-
 void Get_Url(char *str_out) {
 	int characters_to_copy;
 

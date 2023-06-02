@@ -58,6 +58,7 @@ bool VIDEO_CLIENT::Initialize(KCONTEXT *ctx_in, SERVICE_CLIENT_REGISTRY *registr
 	fullscreen = false;
 	mouse = Get_Instance_Of_SERVICE_CLIENT_REGISTRY<MOUSE_CLIENT*>(registry);
 	keyboard = Get_Instance_Of_SERVICE_CLIENT_REGISTRY<KEYBOARD_CLIENT*>(registry);
+	pool = new Queue<VIDEO_ELEMENT*>;
 
 	DEBUG(("H.264 Decoder API v%d.%d\n", broadwayGetMajorVersion(),
 		   broadwayGetMinorVersion()));

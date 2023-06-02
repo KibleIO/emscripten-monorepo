@@ -1,5 +1,6 @@
 http://localhost:2015
 
+root * ./output
 file_server
 
 header {
