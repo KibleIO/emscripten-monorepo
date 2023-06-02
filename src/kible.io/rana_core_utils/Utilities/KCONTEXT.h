@@ -4,11 +4,14 @@
 #include <string>
 #include "SCREEN_DIM.h"
 #include "UTILS.h"
-#include "LOGGING.h"
+#include "../../json/json.hpp"
+#include "../controller/client/ELASTIC_SEARCH_CLIENT.h"
 
-#define LOGGER_INFO(ctx, ...) Log_LOGGING(&ctx->logging, __VA_ARGS__, "INFO", __FILE__, __LINE__, __func__)
-#define LOGGER_WARN(ctx, ...) Log_LOGGING(&ctx->logging, __VA_ARGS__, "WARN", __FILE__, __LINE__, __func__)
-#define LOGGER_ERROR(ctx, ...) Log_LOGGING(&ctx->logging, __VA_ARGS__, "ERROR", __FILE__, __LINE__, __func__)
+#define ELASTIC_SEARCH_URL "https://admin:6ZSAZG5fE7Ip@hub.alienhub.xyz/elk/_doc/?pretty"
+
+#define LOGGER_INFO(ctx, ...) Log_KCONTEXT(ctx, __VA_ARGS__, "INFO", __FILE__, __LINE__, __func__)
+#define LOGGER_WARN(ctx, ...) Log_KCONTEXT(ctx, __VA_ARGS__, "WARN", __FILE__, __LINE__, __func__)
+#define LOGGER_ERROR(ctx, ...) Log_KCONTEXT(ctx, __VA_ARGS__, "ERROR", __FILE__, __LINE__, __func__)
 
 struct KCONTEXT{
 	char trace_uuid[UUID_STR_SIZE];
@@ -21,11 +24,12 @@ struct KCONTEXT{
 	int core_services_backbone;
 	int core_services_backbone_port;
 	int http_services_backbone_port;
-	LOGGING logging;
+	bool production;
 };
 
-void Initialize_KCONTEXT(KCONTEXT*, char*);
+void Initialize_KCONTEXT(KCONTEXT*, char*, bool);
 SCREEN_DIM Get_Screen_Dim_KCONTEXT(KCONTEXT*);
 void Set_Screen_Dim_KCONTEXT(KCONTEXT*, SCREEN_DIM);
+void Log_KCONTEXT(KCONTEXT*, nlohmann::json , char*, char*, int, const char*);
 
 #endif
