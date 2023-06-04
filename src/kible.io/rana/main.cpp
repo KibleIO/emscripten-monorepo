@@ -53,15 +53,15 @@ void Callback_Themis_Edge_Client(google::protobuf::Message *message,
 int main() {
 	KCONTEXT *ctx = new KCONTEXT;
 
-	#ifdef TESTING_BUILD
+#ifdef TESTING_BUILD
 
 	Initialize_KCONTEXT(ctx, __CORE_SYSTEM__, false);
 
-	#else
+#else
 
 	Initialize_KCONTEXT(ctx, __CORE_SYSTEM__, true);
 
-	#endif
+#endif
 
 	LOGGER_INFO(ctx, {
 		{"message", "main begun"},
