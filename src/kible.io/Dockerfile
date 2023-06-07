@@ -7,4 +7,4 @@ COPY . /root/working
 RUN make -C rana_core_utils
 RUN make -C rana
 
-ENTRYPOINT ["./launch.sh"]
+CMD [ "bash", "./launch.sh" ]
