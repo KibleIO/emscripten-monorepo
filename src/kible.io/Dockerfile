@@ -7,7 +7,7 @@ COPY . /root/working
 RUN make -C rana_core_utils
 RUN make -C rana
 
-RUN mv /root/rana/output/* ./
-RUN sed -i 's@src=@src=/kib/@g' /root/index.html
+RUN mv /root/working/rana/output/* ./
+RUN sed -i 's@src=@src=/kib/@g' /root/working/index.html
 
 ENTRYPOINT ["tail -f /dev/null"]
