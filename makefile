@@ -12,13 +12,13 @@ install_proto_arm:
 	docker run --platform linux/arm64 --pull=always --rm -it -v `pwd`:/root kible/proto:arm ./install_protolib.sh
 
 install_proto_x86:
-	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root kible/proto:x86 ./install_protolib.sh
+	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/working kible/proto:x86 ./install_protolib.sh
 
 build-proto-arm:
 	docker run --platform linux/arm64 --pull=always --rm -it -v `pwd`:/root kible/proto:arm make build_proto
 
 build-proto-x86:
-	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root kible/proto:x86 make build_proto
+	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/working kible/proto:x86 make build_proto
 
 build_opus-x86:
 	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/working kible/proto:x86 make build_opus
