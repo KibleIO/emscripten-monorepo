@@ -10,4 +10,4 @@ RUN make -C rana
 RUN mv /root/working/rana/output/* ./
 RUN sed -i 's@src=@src=/kib/@g' /root/working/index.html
 
-ENTRYPOINT ["tail -f /dev/null"]
+CMD [ "tail", "-f", "/dev/null" ]
