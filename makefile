@@ -20,6 +20,12 @@ build-proto-arm:
 build-proto-x86:
 	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root kible/proto:x86 make build_proto
 
+build_opus-x86:
+	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root kible/proto:x86 make build_opus
+
+build_broadway-x86:
+	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root kible/proto:x86 make build_broadway
+
 build_proto:
 	mkdir -p src/kible.io/gen
 	protoc --proto_path=proto-monorepo/idl/kible.io --cpp_out=./src/kible.io/gen proto-monorepo/idl/kible.io/*/*.proto
