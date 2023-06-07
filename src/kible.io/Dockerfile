@@ -1,8 +1,8 @@
-FROM emscripten/emsdk
+FROM kible/proto:x86
 
-WORKDIR /root
+WORKDIR /root/working
 
-COPY . /root
+COPY . /root/working
 
 RUN make -C rana_core_utils
 RUN make -C rana
