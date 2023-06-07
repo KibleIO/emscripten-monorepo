@@ -21,10 +21,10 @@ build-proto-x86:
 	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/working kible/proto:x86 make build_proto
 
 build_opus-x86:
-	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/working kible/proto:x86 make build_opus
+	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/working kible/proto:x86 /bin/bash --login -c "make build_opus"
 
 build_broadway-x86:
-	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/working kible/proto:x86 make build_broadway
+	docker run --platform linux/amd64 --pull=always --rm -it -v `pwd`:/root/working kible/proto:x86 /bin/bash --login -c "make build_broadway"
 
 build_proto:
 	mkdir -p src/kible.io/gen
