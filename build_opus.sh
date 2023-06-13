@@ -10,5 +10,5 @@ mv opus-1.3 src/kible.io/opus/
 
 cd src/kible.io/opus/
 
-emconfigure ./configure --disable-extra-programs --disable-rtcd --disable-intrinsics
+emconfigure ./configure --disable-extra-programs --disable-rtcd --disable-intrinsics --disable-stack-protector
 emmake make

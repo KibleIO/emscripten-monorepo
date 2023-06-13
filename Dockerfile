@@ -22,5 +22,5 @@ RUN sh autogen.sh
 RUN emconfigure ./configure
 RUN emmake make
 RUN make install
-WORKDIR /root
-RUN rm -rf *
+RUN mkdir /root/working
+WORKDIR /root/working
