@@ -21,3 +21,5 @@ Run caddy
 ```bash
 caddy run #localhost:2015
 ```
+
+https://stackoverflow.com/questions/40696280/unsafely-treat-insecure-origin-as-secure-flag-is-not-working-on-chrome

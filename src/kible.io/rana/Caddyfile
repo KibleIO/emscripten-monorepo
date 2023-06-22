@@ -1,9 +1,9 @@
-http://localhost:2015
+:2015 {
+	root * ./output
+	file_server
 
-root * ./output
-file_server
-
-header {
-	Cross-Origin-Embedder-Policy require-corp
-	Cross-Origin-Opener-Policy same-origin
+	header {
+		Cross-Origin-Embedder-Policy require-corp
+		Cross-Origin-Opener-Policy same-origin
+	}
 }
